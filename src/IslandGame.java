@@ -6,8 +6,6 @@ import javalib.impworld.*;
 import java.awt.Color;
 import javalib.worldimages.*;
 
-// TODO: Create regular mountain
-// TODO: Create diamond island of random heights
 // TODO: Render code
 
 // Represents a single square of the game area
@@ -36,6 +34,30 @@ class Cell {
         this.x = x;
         this.y = y;
     };
+    
+    // mix two colors based on factor
+    public Color mix(Color a, Color b, double mix) {
+        float red = (float)((a.getRed() * mix)/255 + (b.getRed() * (1 - mix))/255);
+        float green = (float)((a.getGreen() * mix)/255 + (b.getGreen() * (1 - mix))/255);
+        float blue = (float)((a.getBlue() * mix)/255 + (b.getBlue() * (1 - mix))/255);
+
+        return new Color(red, green, blue);
+    }
+    
+    // draw this cell based on the water height and the maximum height of the island
+    public WorldImage draw(int waterHeight, int maxHeight) {
+        Color max = Color.white;
+        Color even = new Color(0.0f, 0.5f, 0.0f);
+        Color min = Color.red;
+        
+        if (this.height - waterHeight > 0) {
+            return new RectangleImage(10, 10, OutlineMode.SOLID,
+                    this.mix(max, even, this.height/maxHeight));
+        } else {
+            return new RectangleImage(10, 10, OutlineMode.SOLID,
+                    this.mix(min, even, (waterHeight - this.height)/maxHeight));
+        }
+    }
 }
 
 // An OceanCell
@@ -49,6 +71,12 @@ class OceanCell extends Cell {
         super(0, x, y);
         this.isFlooded = true;
     }
+    
+    // draw this OceanCell based on water height and max height
+    public WorldImage draw(int waterHeight, int maxHeight) {
+        return new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE);
+
+    }
 }
 
 // Represents an Island generally
@@ -58,6 +86,9 @@ abstract class Island {
 
     // Cells in the Island
     ArrayList<ArrayList<Cell>> terrain;
+    
+    // Maximum height of this island
+    int maxHeight;
     
     // calculate ManhattanDistance
     double manhattanDistance(int x, int y, int centerX, int centerY) {
@@ -105,6 +136,27 @@ abstract class Island {
         ArrayList<ArrayList<Cell>> fixedCells = this.fixNeighbors(cells);
         
         this.terrain = fixedCells;
+    }
+    
+    // draw the item based on water height
+    WorldImage draw(int waterHeight) {
+        WorldImage result = new EmptyImage();
+        for(ArrayList<Cell> row : this.terrain) {
+            WorldImage rowImage = new EmptyImage();
+            for(Cell cell : row) {
+                rowImage = new BesideImage(rowImage, cell.draw(waterHeight, this.maxHeight));
+            }
+            result = new AboveImage(result, rowImage);
+        }
+        return result;
+    }
+    
+    Island() {
+        this.maxHeight = Island.ISLAND_SIZE/2;
+    }
+    
+    Island(int maxHeight) {
+        this.maxHeight = maxHeight;
     }
 }
 
@@ -156,14 +208,14 @@ class MountainIsland extends DiamondIsland {
         // initialize the heights of the cells in this island
         ArrayList<ArrayList<Double>> heights = new ArrayList<ArrayList<Double>>();
         // iterate over the rows (Y coordinates)
-        for (int i = 0; i < Island.ISLAND_SIZE; i += 1) {
+        for (int i = 0; i <= Island.ISLAND_SIZE; i += 1) {
             // Create a temporary ArrayList<Double> for this row
             ArrayList<Double> curRow = new ArrayList<Double>();
 
             // iterate over the columns (X coordinates)
-            for (int j = 0; j < Island.ISLAND_SIZE; j += 1) {
+            for (int j = 0; j <= Island.ISLAND_SIZE; j += 1) {
                 // create cells with their heights based on Manhattan distance
-                curRow.add(this.manhattanDistance(j, i, centerX, centerY));
+                curRow.add(this.maxHeight - this.manhattanDistance(j, i, centerX, centerY));
             }
 
             // add the current row to the list of heights
@@ -178,22 +230,22 @@ class MountainIsland extends DiamondIsland {
 
 // A Diamond-shaped island with random heights
 class RandomIsland extends DiamondIsland {
- // generate the heights of the cells on this mountain island
+    // generate the heights of the cells on this random island
     public ArrayList<ArrayList<Double>> generateHeights() {
-        int maxSize = Island.ISLAND_SIZE;
+        
         Random r = new Random();
 
         // initialize the heights of the cells in this island
         ArrayList<ArrayList<Double>> heights = new ArrayList<ArrayList<Double>>();
         // iterate over the rows (Y coordinates)
-        for (int i = 0; i < Island.ISLAND_SIZE; i += 1) {
+        for (int i = 0; i <= Island.ISLAND_SIZE; i += 1) {
             // Create a temporary ArrayList<Double> for this row
             ArrayList<Double> curRow = new ArrayList<Double>();
 
             // iterate over the columns (X coordinates)
-            for (int j = 0; j < Island.ISLAND_SIZE; j += 1) {
+            for (int j = 0; j <= Island.ISLAND_SIZE; j += 1) {
                 // create cells with their heights determined randomly from 0 to maxSize
-                curRow.add(r.nextInt(maxSize + 1) * 1.0);
+                curRow.add(r.nextInt(this.maxHeight + 1) * 1.0);
             }
 
             // add the current row to the list of heights
@@ -202,26 +254,47 @@ class RandomIsland extends DiamondIsland {
 
         return heights;
     }
+    
+    RandomIsland() {
+        this.maxHeight = 64;
+    }
 }
 
-/*
- * class ForbiddenIslandWorld extends World { // All the cells of the game,
- * including the ocean IList<Cell> board; // the current height of the ocean int
- * waterHeight; }
- */
+class ForbiddenIslandWorld extends World { // All the cells of the game, including the ocean 
+    // IList<Cell> board; // the current height of the ocean 
+    int waterHeight;
+    
+    // The island of the world
+    Island island;
+
+    // draw the world
+    public WorldScene makeScene() {
+        WorldScene scene = new WorldScene(Island.ISLAND_SIZE * 10, Island.ISLAND_SIZE*10);
+        scene.placeImageXY(this.island.draw(waterHeight), Island.ISLAND_SIZE/2 * 10, Island.ISLAND_SIZE/2 * 10);
+        return scene;
+    }
+    
+    // create a new ForbiddenIslandWorld with the given Island
+    ForbiddenIslandWorld(Island island) {
+        this.island = island;
+        this.waterHeight = 0;
+    }
+}
 
 class ExamplesIslandGame {
     Island mountainIsland = new MountainIsland();
     Island randomIsland = new RandomIsland();
+    ForbiddenIslandWorld world;
     
     void initializeIslands() {
         this.mountainIsland.generateTerrain();
         this.randomIsland.generateTerrain();
+        this.world = new ForbiddenIslandWorld(randomIsland);
+        this.world.waterHeight = 0;
     }
     
     void testIslands(Tester t) {
         this.initializeIslands();
-        int i = 0;
-        i += i;
+        this.world.bigBang(640, 640);
     }
 }
