@@ -58,22 +58,22 @@ class Cell {
                
         if (this.isFlooded) {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(minFlooded, maxFlooded, (waterHeight - this.height)/maxHeight));
+                    this.mix(maxFlooded, minFlooded, (waterHeight - this.height)/maxHeight));
         }
         
         if (this.height - waterHeight > 0) {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(minNoFlood, maxNoFlood, (this.height - waterHeight)/maxHeight));
+                    this.mix(maxNoFlood, minNoFlood, (this.height - waterHeight)/maxHeight));
         } else {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(minToFlood, maxToFlood, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
+                    this.mix(maxToFlood, minToFlood, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
         }
     }
     
     // flood this cell
     // EFFECT: sets the isFlooded flag
     void flood(int waterHeight) {
-        if (this.height < waterHeight) {
+        if (this.height < waterHeight && !this.isFlooded) {
             this.isFlooded = true;
             this.left.flood(waterHeight);
             this.top.flood(waterHeight);
