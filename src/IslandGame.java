@@ -37,6 +37,9 @@ class Cell {
     
     // mix two colors based on factor
     public Color mix(Color a, Color b, double mix) {
+        if (mix > 1.0d || mix < 0.0d) {
+            throw new IllegalArgumentException("Mix not between 0.0 and 1.0: " + mix);
+        }
         float red = (float)((a.getRed() * mix)/255 + (b.getRed() * (1 - mix))/255);
         float green = (float)((a.getGreen() * mix)/255 + (b.getGreen() * (1 - mix))/255);
         float blue = (float)((a.getBlue() * mix)/255 + (b.getBlue() * (1 - mix))/255);
@@ -47,15 +50,16 @@ class Cell {
     // draw this cell based on the water height and the maximum height of the island
     public WorldImage draw(int waterHeight, int maxHeight) {
         Color max = Color.white;
-        Color even = new Color(0.0f, 0.5f, 0.0f);
+        Color justNotFlooded = new Color(0.0f, 0.5f, 0.0f);
+        Color justFlooded = new Color(0.25f, 0.5f, 0.0f);
         Color min = Color.red;
         
         if (this.height - waterHeight > 0) {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(max, even, this.height/maxHeight));
+                    this.mix(max, justNotFlooded, (this.height - waterHeight)/maxHeight));
         } else {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(min, even, (waterHeight - this.height)/maxHeight));
+                    this.mix(min, justFlooded, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
         }
     }
 }
@@ -266,6 +270,9 @@ class ForbiddenIslandWorld extends World { // All the cells of the game, includi
     
     // The island of the world
     Island island;
+    
+    // Tick counter
+    int tick;
 
     // draw the world
     public WorldScene makeScene() {
@@ -274,10 +281,19 @@ class ForbiddenIslandWorld extends World { // All the cells of the game, includi
         return scene;
     }
     
+    // handle ticking
+    public void onTick() {
+        this.tick = (this.tick + 1) % 10;
+        if (this.tick == 0) {
+            this.waterHeight += 1;
+        }
+    }
+    
     // create a new ForbiddenIslandWorld with the given Island
     ForbiddenIslandWorld(Island island) {
         this.island = island;
         this.waterHeight = 0;
+        this.tick = 0;
     }
 }
 
@@ -289,12 +305,11 @@ class ExamplesIslandGame {
     void initializeIslands() {
         this.mountainIsland.generateTerrain();
         this.randomIsland.generateTerrain();
-        this.world = new ForbiddenIslandWorld(randomIsland);
-        this.world.waterHeight = 0;
+        this.world = new ForbiddenIslandWorld(mountainIsland);
     }
     
     void testIslands(Tester t) {
         this.initializeIslands();
-        this.world.bigBang(640, 640);
+        this.world.bigBang(640, 640, .016);
     }
 }
