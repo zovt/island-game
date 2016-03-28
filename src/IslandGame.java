@@ -53,12 +53,12 @@ class Cell {
         Color minNoFlood = new Color(0.0f, 0.5f, 0.0f);
         Color minToFlood = new Color(0.25f, 0.5f, 0.0f);
         Color maxToFlood = Color.red;
-        Color minFlooded = new Color(0.0f, 0.5f, 0.5f);
+        Color minFlooded = new Color(0.0f, 0.35f, 0.5f);
         Color maxFlooded = new Color(0.0f, 0.0f, 1.0f);
                
         if (this.isFlooded) {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(maxFlooded, minFlooded, (waterHeight - this.height)/maxHeight));
+                    this.mix(maxFlooded, minFlooded, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
         }
         
         if (this.height - waterHeight > 0) {
