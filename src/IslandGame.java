@@ -49,17 +49,36 @@ class Cell {
     
     // draw this cell based on the water height and the maximum height of the island
     public WorldImage draw(int waterHeight, int maxHeight) {
-        Color max = Color.white;
-        Color justNotFlooded = new Color(0.0f, 0.5f, 0.0f);
-        Color justFlooded = new Color(0.25f, 0.5f, 0.0f);
-        Color min = Color.red;
+        Color maxNoFlood = Color.white;
+        Color minNoFlood = new Color(0.0f, 0.5f, 0.0f);
+        Color minToFlood = new Color(0.25f, 0.5f, 0.0f);
+        Color maxToFlood = Color.red;
+        Color minFlooded = new Color(0.0f, 0.5f, 0.5f);
+        Color maxFlooded = new Color(0.0f, 0.0f, 1.0f);
+               
+        if (this.isFlooded) {
+            return new RectangleImage(10, 10, OutlineMode.SOLID,
+                    this.mix(minFlooded, maxFlooded, (waterHeight - this.height)/maxHeight));
+        }
         
         if (this.height - waterHeight > 0) {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(max, justNotFlooded, (this.height - waterHeight)/maxHeight));
+                    this.mix(minNoFlood, maxNoFlood, (this.height - waterHeight)/maxHeight));
         } else {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(min, justFlooded, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
+                    this.mix(minToFlood, maxToFlood, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
+        }
+    }
+    
+    // flood this cell
+    // EFFECT: sets the isFlooded flag
+    void flood(int waterHeight) {
+        if (this.height < waterHeight) {
+            this.isFlooded = true;
+            this.left.flood(waterHeight);
+            this.top.flood(waterHeight);
+            this.right.flood(waterHeight);
+            this.bottom.flood(waterHeight);
         }
     }
 }
@@ -79,7 +98,11 @@ class OceanCell extends Cell {
     // draw this OceanCell based on water height and max height
     public WorldImage draw(int waterHeight, int maxHeight) {
         return new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE);
-
+    }
+    
+    // flood this oceanCell
+    void flood(int waterHeight) {
+        // do nothing
     }
 }
 
@@ -153,6 +176,18 @@ abstract class Island {
             result = new AboveImage(result, rowImage);
         }
         return result;
+    }
+    
+    // flood the island based on the current water height
+    // EFFECT: modify the list of cells with the current flooded state
+    void flood(int waterHeight) {
+        for (ArrayList<Cell> row : this.terrain) {
+            for (Cell cell : row) {
+                if(cell.left.isFlooded || cell.right.isFlooded || cell.top.isFlooded || cell.bottom.isFlooded) {
+                    cell.flood(waterHeight);
+                }
+            }
+        }
     }
     
     Island() {
@@ -286,6 +321,7 @@ class ForbiddenIslandWorld extends World { // All the cells of the game, includi
         this.tick = (this.tick + 1) % 10;
         if (this.tick == 0) {
             this.waterHeight += 1;
+            this.island.flood(waterHeight);
         }
     }
     
@@ -305,7 +341,7 @@ class ExamplesIslandGame {
     void initializeIslands() {
         this.mountainIsland.generateTerrain();
         this.randomIsland.generateTerrain();
-        this.world = new ForbiddenIslandWorld(mountainIsland);
+        this.world = new ForbiddenIslandWorld(randomIsland);
     }
     
     void testIslands(Tester t) {
