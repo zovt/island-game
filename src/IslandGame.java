@@ -34,20 +34,25 @@ class Cell {
         this.x = x;
         this.y = y;
     };
-    
+
     // mix two colors based on factor
     public Color mix(Color a, Color b, double mix) {
         if (mix > 1.0d || mix < 0.0d) {
-            throw new IllegalArgumentException("Mix not between 0.0 and 1.0: " + mix);
+            throw new IllegalArgumentException(
+                    "Mix not between 0.0 and 1.0: " + mix);
         }
-        float red = (float)((a.getRed() * mix)/255 + (b.getRed() * (1 - mix))/255);
-        float green = (float)((a.getGreen() * mix)/255 + (b.getGreen() * (1 - mix))/255);
-        float blue = (float)((a.getBlue() * mix)/255 + (b.getBlue() * (1 - mix))/255);
+        float red = (float) ((a.getRed() * mix) / 255
+                + (b.getRed() * (1 - mix)) / 255);
+        float green = (float) ((a.getGreen() * mix) / 255
+                + (b.getGreen() * (1 - mix)) / 255);
+        float blue = (float) ((a.getBlue() * mix) / 255
+                + (b.getBlue() * (1 - mix)) / 255);
 
         return new Color(red, green, blue);
     }
-    
-    // draw this cell based on the water height and the maximum height of the island
+
+    // draw this cell based on the water height and the maximum height of the
+    // island
     public WorldImage draw(int waterHeight, int maxHeight) {
         Color maxNoFlood = Color.white;
         Color minNoFlood = new Color(0.0f, 0.5f, 0.0f);
@@ -55,21 +60,29 @@ class Cell {
         Color maxToFlood = Color.red;
         Color minFlooded = new Color(0.0f, 0.35f, 0.5f);
         Color maxFlooded = new Color(0.0f, 0.0f, 1.0f);
-               
+
         if (this.isFlooded) {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(maxFlooded, minFlooded, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
+                    this.mix(maxFlooded, minFlooded,
+                            Math.min(Math.sqrt(
+                                    (waterHeight - this.height) / maxHeight),
+                            1.0f)));
         }
-        
+
         if (this.height - waterHeight > 0) {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(maxNoFlood, minNoFlood, (this.height - waterHeight)/maxHeight));
-        } else {
+                    this.mix(maxNoFlood, minNoFlood,
+                            (this.height - waterHeight) / maxHeight));
+        }
+        else {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
-                    this.mix(maxToFlood, minToFlood, Math.min(Math.sqrt((waterHeight - this.height)/maxHeight), 1.0f)));
+                    this.mix(maxToFlood, minToFlood,
+                            Math.min(Math.sqrt(
+                                    (waterHeight - this.height) / maxHeight),
+                            1.0f)));
         }
     }
-    
+
     // flood this cell
     // EFFECT: sets the isFlooded flag
     void flood(int waterHeight) {
@@ -89,17 +102,17 @@ class OceanCell extends Cell {
         super(height, x, y);
         this.isFlooded = true;
     }
-    
+
     OceanCell(int x, int y) {
         super(0, x, y);
         this.isFlooded = true;
     }
-    
+
     // draw this OceanCell based on water height and max height
     public WorldImage draw(int waterHeight, int maxHeight) {
         return new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE);
     }
-    
+
     // flood this oceanCell
     void flood(int waterHeight) {
         // do nothing
@@ -113,10 +126,10 @@ abstract class AIsland {
 
     // Cells in the AIsland
     ArrayList<ArrayList<Cell>> terrain;
-    
+
     // Maximum height of this island
     int maxHeight;
-    
+
     // calculate ManhattanDistance
     double manhattanDistance(int x, int y, int centerX, int centerY) {
         return Math.abs(x - centerX) + Math.abs(y - centerY);
@@ -161,39 +174,41 @@ abstract class AIsland {
         ArrayList<ArrayList<Double>> heights = this.generateHeights();
         ArrayList<ArrayList<Cell>> cells = this.generateCells(heights);
         ArrayList<ArrayList<Cell>> fixedCells = this.fixNeighbors(cells);
-        
+
         this.terrain = fixedCells;
     }
-    
+
     // draw the item based on water height
     WorldImage draw(int waterHeight) {
         WorldImage result = new EmptyImage();
-        for(ArrayList<Cell> row : this.terrain) {
+        for (ArrayList<Cell> row : this.terrain) {
             WorldImage rowImage = new EmptyImage();
-            for(Cell cell : row) {
-                rowImage = new BesideImage(rowImage, cell.draw(waterHeight, this.maxHeight));
+            for (Cell cell : row) {
+                rowImage = new BesideImage(rowImage,
+                        cell.draw(waterHeight, this.maxHeight));
             }
             result = new AboveImage(result, rowImage);
         }
         return result;
     }
-    
+
     // flood the island based on the current water height
     // EFFECT: modify the list of cells with the current flooded state
     void flood(int waterHeight) {
         for (ArrayList<Cell> row : this.terrain) {
             for (Cell cell : row) {
-                if(cell.left.isFlooded || cell.right.isFlooded || cell.top.isFlooded || cell.bottom.isFlooded) {
+                if (cell.left.isFlooded || cell.right.isFlooded
+                        || cell.top.isFlooded || cell.bottom.isFlooded) {
                     cell.flood(waterHeight);
                 }
             }
         }
     }
-    
+
     AIsland() {
-        this.maxHeight = AIsland.ISLAND_SIZE/2;
+        this.maxHeight = AIsland.ISLAND_SIZE / 2;
     }
-    
+
     AIsland(int maxHeight) {
         this.maxHeight = maxHeight;
     }
@@ -204,22 +219,24 @@ abstract class DiamondIsland extends AIsland {
     // The distance from the center of the island at which the ocean starts
     // (32 by default)
     int oceanDistance;
-    
+
     // generate the cells for this mountain island based on their heights
     public ArrayList<ArrayList<Cell>> generateCells(
             ArrayList<ArrayList<Double>> heights) {
         int centerX = AIsland.ISLAND_SIZE / 2;
         int centerY = AIsland.ISLAND_SIZE / 2;
-        
+
         ArrayList<ArrayList<Cell>> result = new ArrayList<ArrayList<Cell>>();
-        
+
         for (int i = 0; i < heights.size(); i += 1) {
             ArrayList<Cell> cellRow = new ArrayList<Cell>();
             for (int j = 0; j < heights.get(i).size(); j += 1) {
-                if (this.manhattanDistance(j, i, centerX, centerY) < this.oceanDistance) {
+                if (this.manhattanDistance(j, i, centerX,
+                        centerY) < this.oceanDistance) {
                     double height = heights.get(i).get(j);
                     cellRow.add(new Cell(height, j, i));
-                } else {
+                }
+                else {
                     cellRow.add(new OceanCell(j, i));
                 }
             }
@@ -227,11 +244,11 @@ abstract class DiamondIsland extends AIsland {
         }
         return result;
     }
-    
+
     DiamondIsland() {
         this.oceanDistance = 32;
     }
-    
+
     DiamondIsland(int oceanDistance) {
         this.oceanDistance = oceanDistance;
     }
@@ -254,7 +271,8 @@ class MountainIsland extends DiamondIsland {
             // iterate over the columns (X coordinates)
             for (int j = 0; j <= AIsland.ISLAND_SIZE; j += 1) {
                 // create cells with their heights based on Manhattan distance
-                curRow.add(this.maxHeight - this.manhattanDistance(j, i, centerX, centerY));
+                curRow.add(this.maxHeight
+                        - this.manhattanDistance(j, i, centerX, centerY));
             }
 
             // add the current row to the list of heights
@@ -264,14 +282,13 @@ class MountainIsland extends DiamondIsland {
         return heights;
     }
 
-
 }
 
 // A Diamond-shaped island with random heights
 class RandomIsland extends DiamondIsland {
     // generate the heights of the cells on this random island
     public ArrayList<ArrayList<Double>> generateHeights() {
-        
+
         Random r = new Random();
 
         // initialize the heights of the cells in this island
@@ -283,7 +300,8 @@ class RandomIsland extends DiamondIsland {
 
             // iterate over the columns (X coordinates)
             for (int j = 0; j <= AIsland.ISLAND_SIZE; j += 1) {
-                // create cells with their heights determined randomly from 0 to maxSize
+                // create cells with their heights determined randomly from 0 to
+                // maxSize
                 curRow.add(r.nextInt(this.maxHeight + 1) * 1.0);
             }
 
@@ -293,38 +311,176 @@ class RandomIsland extends DiamondIsland {
 
         return heights;
     }
-    
+
     RandomIsland() {
         this.maxHeight = 64;
     }
 }
 
-class ForbiddenIslandWorld extends World { // All the cells of the game, including the ocean 
-    // IList<Cell> board; // the current height of the ocean 
-    int waterHeight;
+class RandomTerrainIsland extends AIsland {
+    // generate the nudge
+    double nudge(double area) {
+        if (Math.random() <= .32) {
+            return -1 * Math.random() * area + (Math.random() * this.maxHeight)/this.maxHeight;
+        } else {
+            return Math.random() * area + (Math.random() * this.maxHeight)/this.maxHeight;
+        }
+    }
     
+    // generate the heights of the cells on this random terrain island
+    public ArrayList<ArrayList<Double>> generateHeights() {
+        // Initialize the arraylist to be IslandSize + 1 columns and rows big
+        ArrayList<ArrayList<Double>> result = new ArrayList<ArrayList<Double>>(
+                AIsland.ISLAND_SIZE + 1);
+        for (int i = 0; i < AIsland.ISLAND_SIZE + 1; i += 1) {
+            ArrayList<Double> row = new ArrayList<Double>(
+                    AIsland.ISLAND_SIZE + 1);
+            for (int j = 0; j < AIsland.ISLAND_SIZE + 1; j += 1) {
+                row.add(0d);
+            }
+            result.add(row);
+        }
+
+        // set the center of the arraylist to the max height
+        int centerX = (AIsland.ISLAND_SIZE + 1) / 2;
+        int centerY = (AIsland.ISLAND_SIZE + 1) / 2;
+        result.get(centerY).set(centerX, (double) this.maxHeight);
+        
+        // set the edges to height 1
+        result.get(0).set(centerX, 1d);
+        result.get(AIsland.ISLAND_SIZE - 1).set(centerX, 1d);
+        result.get(centerY).set(0, 1d);
+        result.get(centerY).set(AIsland.ISLAND_SIZE - 1, 1d);
+
+        this.generateTerrain(result, 0, 0, centerX, 0, centerX, centerY, 0,
+                centerY);
+        this.generateTerrain(result, centerX, 0, result.size()-1, 0,
+                result.size() - 1, centerY, centerX, centerY);
+        this.generateTerrain(result, centerX, centerY, result.size()-1, centerY,
+                result.size() - 1, result.size() - 1, centerX, result.size() - 1);
+        this.generateTerrain(result, 0, centerY, centerX, centerY, centerX,
+                result.size() - 1, 0, result.size() - 1);
+
+        return result;
+    }
+
+    public void generateTerrain(ArrayList<ArrayList<Double>> terrain, int tLX,
+            int tLY, int tRX, int tRY, int bRX, int bRY, int bLX, int bLY) {
+        if (tRX - tLX > 1 && bRX - bLX > 1 && bLY - tLY > 1 && bRY - tRY > 1) {
+            int tX = (tLX + tRX) / 2;
+            int tY = tLY;
+
+            int rX = tRX;
+            int rY = (tLY + bLY) / 2;
+
+            int bX = (bLX + bRX) / 2;
+            int bY = bLY;
+
+            int lX = tLX;
+            int lY = (tLY + bLY) / 2;
+
+            int mX = (lX + rX) / 2;
+            int mY = (tY + bY) / 2;
+            
+            double area = (tRX - tLX) * (bLY - tLY);
+
+            double t = this.nudge(area)
+                    + (terrain.get(tLY).get(tLX) + terrain.get(tRY).get(tRX))
+                            / 2;
+            double r = this.nudge(area)
+                    + (terrain.get(tRY).get(tRX) + terrain.get(bRY).get(bRX))
+                            / 2;
+            double b = this.nudge(area)
+                    + (terrain.get(bLY).get(bLX) + terrain.get(bRY).get(bRX))
+                            / 2;
+            double l = this.nudge(area)
+                    + (terrain.get(tLY).get(tLX) + terrain.get(bLY).get(bLX))
+                            / 2;
+            double m = this.nudge(area) + (terrain.get(tLY).get(tLX)
+                    + terrain.get(tRY).get(tRX) + terrain.get(bRY).get(bRX)
+                    + terrain.get(bLY).get(bLX)) / 4;
+            
+            t = Math.min(this.maxHeight, t);
+            r = Math.min(this.maxHeight, r);
+            b = Math.min(this.maxHeight, b);
+            l = Math.min(this.maxHeight, l);
+            m = Math.min(this.maxHeight, m);
+
+
+            if (terrain.get(tY).get(tX) == 0) {
+                terrain.get(tY).set(tX, t);
+            }
+            if (terrain.get(rY).get(rX) == 0) {
+            terrain.get(rY).set(rX, r);
+            }
+            if (terrain.get(bY).get(bX) == 0) {
+            terrain.get(bY).set(bX, b);
+            }
+            if (terrain.get(lY).get(lX) == 0) {
+            terrain.get(lY).set(lX, l);
+            }
+            if (terrain.get(mY).get(mX) == 0) {
+            terrain.get(mY).set(mX, m);
+            }
+            
+            this.generateTerrain(terrain, tLX, tLY, tX, tY, mX, mY, lX, lY);
+            this.generateTerrain(terrain, tX, tY, tRX, tRY, rX, rY, mX, mY);
+            this.generateTerrain(terrain, mX, mY, rX, rY, bRX, bRY, bX, bY);
+            this.generateTerrain(terrain, lX, lY, mX, mY, bX, bY, bLX, bLY);
+        }
+    }
+
+    public ArrayList<ArrayList<Cell>> generateCells(
+            ArrayList<ArrayList<Double>> heights) {
+        ArrayList<ArrayList<Cell>> results = new ArrayList<ArrayList<Cell>>();
+        for (int i = 0; i < heights.size(); i += 1) {
+            ArrayList<Cell> cellRow = new ArrayList<Cell>();
+            for (int j = 0; j < heights.get(i).size(); j += 1) {
+                if (heights.get(i).get(j) <= 0) {
+                    cellRow.add(new OceanCell(j, i));
+                } else {
+                    cellRow.add(new Cell(heights.get(i).get(j), j, i));
+                }
+            }
+            results.add(cellRow);
+        }
+        return results;
+    }
+
+    RandomTerrainIsland(int maxHeight) {
+        super(maxHeight);
+    }
+}
+
+class ForbiddenIslandWorld extends World { // All the cells of the game,
+                                           // including the ocean
+    // IList<Cell> board; // the current height of the ocean
+    int waterHeight;
+
     // The island of the world
     AIsland island;
-    
+
     // Tick counter
     int tick;
 
     // draw the world
     public WorldScene makeScene() {
-        WorldScene scene = new WorldScene(AIsland.ISLAND_SIZE * 10, AIsland.ISLAND_SIZE*10);
-        scene.placeImageXY(this.island.draw(waterHeight), AIsland.ISLAND_SIZE/2 * 10, AIsland.ISLAND_SIZE/2 * 10);
+        WorldScene scene = new WorldScene(AIsland.ISLAND_SIZE * 10,
+                AIsland.ISLAND_SIZE * 10);
+        scene.placeImageXY(this.island.draw(waterHeight),
+                AIsland.ISLAND_SIZE / 2 * 10, AIsland.ISLAND_SIZE / 2 * 10);
         return scene;
     }
-    
+
     // handle ticking
     public void onTick() {
-        this.tick = (this.tick + 1) % 5;
+        this.tick = (this.tick + 1) % 10;
         if (this.tick == 0) {
             this.waterHeight += 1;
             this.island.flood(waterHeight);
         }
     }
-    
+
     // create a new ForbiddenIslandWorld with the given AIsland
     ForbiddenIslandWorld(AIsland island) {
         this.island = island;
@@ -336,14 +492,16 @@ class ForbiddenIslandWorld extends World { // All the cells of the game, includi
 class ExamplesIslandGame {
     AIsland mountainIsland = new MountainIsland();
     AIsland randomIsland = new RandomIsland();
+    AIsland randomTerrainIsland = new RandomTerrainIsland(128);
     ForbiddenIslandWorld world;
-    
+
     void initializeIslands() {
         this.mountainIsland.generateTerrain();
         this.randomIsland.generateTerrain();
-        this.world = new ForbiddenIslandWorld(randomIsland);
+        this.randomTerrainIsland.generateTerrain();
+        this.world = new ForbiddenIslandWorld(randomTerrainIsland);
     }
-    
+
     void testIslands(Tester t) {
         this.initializeIslands();
         this.world.bigBang(640, 640, .016);
