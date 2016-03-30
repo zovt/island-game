@@ -137,13 +137,10 @@ class OceanCell extends Cell {
     }
 }
 
-// Represents an AIsland generally
-abstract class AIsland {
+// Represents an IslandGenerator generally
+abstract class AIslandGenerator {
     // Defines an int constant
     static final int ISLAND_SIZE = 64;
-
-    // Cells in the AIsland
-    ArrayList<ArrayList<Cell>> terrain;
 
     // Maximum height of this island
     int maxHeight;
@@ -174,8 +171,8 @@ abstract class AIsland {
                 left = cells.get(cur.y).get(Math.max(cur.x - 1, 0));
                 top = cells.get(Math.max(cur.y - 1, 0)).get(cur.x);
                 right = cells.get(cur.y)
-                        .get(Math.min(cur.x + 1, AIsland.ISLAND_SIZE - 1));
-                bottom = cells.get(Math.min(cur.y + 1, AIsland.ISLAND_SIZE - 1))
+                        .get(Math.min(cur.x + 1, AIslandGenerator.ISLAND_SIZE - 1));
+                bottom = cells.get(Math.min(cur.y + 1, AIslandGenerator.ISLAND_SIZE - 1))
                         .get(cur.x);
 
                 cur.setNeighbors(left, top, right, bottom);
@@ -187,77 +184,37 @@ abstract class AIsland {
     }
 
     // generate the terrain
-    // EFFECT: sets the terrain field to the generated terrain
-    public void generateTerrain() {
+    public IList<Cell> generateTerrain() {
         ArrayList<ArrayList<Double>> heights = this.generateHeights();
         ArrayList<ArrayList<Cell>> cells = this.generateCells(heights);
         ArrayList<ArrayList<Cell>> fixedCells = this.fixNeighbors(cells);
-
-        this.terrain = fixedCells;
-    }
-
-    // draw the item based on water height
-    WorldImage draw(int waterHeight) {
-        WorldImage result = new EmptyImage();
-        for (ArrayList<Cell> row : this.terrain) {
-            WorldImage rowImage = new EmptyImage();
-            for (Cell cell : row) {
-                rowImage = new BesideImage(rowImage,
-                        cell.draw(waterHeight, this.maxHeight));
-            }
-            result = new AboveImage(result, rowImage);
-        }
-        return result;
-    }
-
-    // flood the island based on the current water height
-    // EFFECT: modify the list of cells with the current flooded state
-    void flood(int waterHeight) {
-        for (ArrayList<Cell> row : this.terrain) {
-            for (Cell cell : row) {
-                if (cell.left.isFlooded || cell.right.isFlooded
-                        || cell.top.isFlooded || cell.bottom.isFlooded) {
-                    cell.flood(waterHeight);
-                }
-            }
-        }
-    }
-    
-    // find all cells on the coast
-    ArrayList<Cell> coastline() {
-        ArrayList<OceanCell> water = this.findOcean();
-        return this.findCoast(water);
-    }
-    
-    // find all ocean cells in the terrain
-    ArrayList<OceanCell> findOcean() {
-        ArrayList<OceanCell> result = new ArrayList<OceanCell>();
-        for(ArrayList<Cell> row : this.terrain) {
+        ArrayList<Cell> reversed = new ArrayList<Cell>();
+        
+        for(ArrayList<Cell> row : fixedCells) {
             for(Cell cell : row) {
-                cell.addIfOcean(result);
+                reversed.add(0, cell);
             }
         }
-        return result;
-    }
-    
-    // find the coast given a list of ocean cells
-    ArrayList<Cell> findCoast(ArrayList<OceanCell> water) {
-        ArrayList<Cell> result = new ArrayList<Cell>();
+        
+        IList<Cell> result = new Empty<Cell>();
+        for(Cell cell : reversed) {
+            result = new Cons<Cell>(cell, result);
+        }
         
         return result;
     }
 
-    AIsland() {
-        this.maxHeight = AIsland.ISLAND_SIZE / 2;
+    AIslandGenerator() {
+        this.maxHeight = AIslandGenerator.ISLAND_SIZE / 2;
     }
 
-    AIsland(int maxHeight) {
+    AIslandGenerator(int maxHeight) {
         this.maxHeight = maxHeight;
     }
 }
 
-// A Diamond-shaped AIsland
-abstract class DiamondIsland extends AIsland {
+// A Diamond-shaped AIslandGenerator
+abstract class DiamondIslandGenerator extends AIslandGenerator {
     // The distance from the center of the island at which the ocean starts
     // (32 by default)
     int oceanDistance;
@@ -265,8 +222,8 @@ abstract class DiamondIsland extends AIsland {
     // generate the cells for this mountain island based on their heights
     public ArrayList<ArrayList<Cell>> generateCells(
             ArrayList<ArrayList<Double>> heights) {
-        int centerX = AIsland.ISLAND_SIZE / 2;
-        int centerY = AIsland.ISLAND_SIZE / 2;
+        int centerX = AIslandGenerator.ISLAND_SIZE / 2;
+        int centerY = AIslandGenerator.ISLAND_SIZE / 2;
 
         ArrayList<ArrayList<Cell>> result = new ArrayList<ArrayList<Cell>>();
 
@@ -287,31 +244,31 @@ abstract class DiamondIsland extends AIsland {
         return result;
     }
 
-    DiamondIsland() {
+    DiamondIslandGenerator() {
         this.oceanDistance = 32;
     }
 
-    DiamondIsland(int oceanDistance) {
+    DiamondIslandGenerator(int oceanDistance) {
         this.oceanDistance = oceanDistance;
     }
 }
 
-// A Mountain AIsland
-class MountainIsland extends DiamondIsland {
+// A Mountain AIslandGenerator
+class MountainIslandGenerator extends DiamondIslandGenerator {
     // generate the heights of the cells on this mountain island
     public ArrayList<ArrayList<Double>> generateHeights() {
-        int centerX = AIsland.ISLAND_SIZE / 2;
-        int centerY = AIsland.ISLAND_SIZE / 2;
+        int centerX = AIslandGenerator.ISLAND_SIZE / 2;
+        int centerY = AIslandGenerator.ISLAND_SIZE / 2;
 
         // initialize the heights of the cells in this island
         ArrayList<ArrayList<Double>> heights = new ArrayList<ArrayList<Double>>();
         // iterate over the rows (Y coordinates)
-        for (int i = 0; i <= AIsland.ISLAND_SIZE; i += 1) {
+        for (int i = 0; i <= AIslandGenerator.ISLAND_SIZE; i += 1) {
             // Create a temporary ArrayList<Double> for this row
             ArrayList<Double> curRow = new ArrayList<Double>();
 
             // iterate over the columns (X coordinates)
-            for (int j = 0; j <= AIsland.ISLAND_SIZE; j += 1) {
+            for (int j = 0; j <= AIslandGenerator.ISLAND_SIZE; j += 1) {
                 // create cells with their heights based on Manhattan distance
                 curRow.add(this.maxHeight
                         - this.manhattanDistance(j, i, centerX, centerY));
@@ -327,7 +284,7 @@ class MountainIsland extends DiamondIsland {
 }
 
 // A Diamond-shaped island with random heights
-class RandomIsland extends DiamondIsland {
+class RandomIslandGenerator extends DiamondIslandGenerator {
     // generate the heights of the cells on this random island
     public ArrayList<ArrayList<Double>> generateHeights() {
 
@@ -336,12 +293,12 @@ class RandomIsland extends DiamondIsland {
         // initialize the heights of the cells in this island
         ArrayList<ArrayList<Double>> heights = new ArrayList<ArrayList<Double>>();
         // iterate over the rows (Y coordinates)
-        for (int i = 0; i <= AIsland.ISLAND_SIZE; i += 1) {
+        for (int i = 0; i <= AIslandGenerator.ISLAND_SIZE; i += 1) {
             // Create a temporary ArrayList<Double> for this row
             ArrayList<Double> curRow = new ArrayList<Double>();
 
             // iterate over the columns (X coordinates)
-            for (int j = 0; j <= AIsland.ISLAND_SIZE; j += 1) {
+            for (int j = 0; j <= AIslandGenerator.ISLAND_SIZE; j += 1) {
                 // create cells with their heights determined randomly from 0 to
                 // maxSize
                 curRow.add(r.nextInt(this.maxHeight + 1) * 1.0);
@@ -354,12 +311,12 @@ class RandomIsland extends DiamondIsland {
         return heights;
     }
 
-    RandomIsland() {
+    RandomIslandGenerator() {
         this.maxHeight = 64;
     }
 }
 
-class RandomTerrainIsland extends AIsland {
+class RandomTerrainIslandGenerator extends AIslandGenerator {
     // generate the nudge
     double nudge(double area) {
         if (Math.random() <= .5) {
@@ -376,26 +333,26 @@ class RandomTerrainIsland extends AIsland {
     public ArrayList<ArrayList<Double>> generateHeights() {
         // Initialize the arraylist to be IslandSize + 1 columns and rows big
         ArrayList<ArrayList<Double>> result = new ArrayList<ArrayList<Double>>(
-                AIsland.ISLAND_SIZE + 1);
-        for (int i = 0; i < AIsland.ISLAND_SIZE + 1; i += 1) {
+                AIslandGenerator.ISLAND_SIZE + 1);
+        for (int i = 0; i < AIslandGenerator.ISLAND_SIZE + 1; i += 1) {
             ArrayList<Double> row = new ArrayList<Double>(
-                    AIsland.ISLAND_SIZE + 1);
-            for (int j = 0; j < AIsland.ISLAND_SIZE + 1; j += 1) {
+                    AIslandGenerator.ISLAND_SIZE + 1);
+            for (int j = 0; j < AIslandGenerator.ISLAND_SIZE + 1; j += 1) {
                 row.add(0d);
             }
             result.add(row);
         }
 
         // set the center of the arraylist to the max height
-        int centerX = (AIsland.ISLAND_SIZE + 1) / 2;
-        int centerY = (AIsland.ISLAND_SIZE + 1) / 2;
+        int centerX = (AIslandGenerator.ISLAND_SIZE + 1) / 2;
+        int centerY = (AIslandGenerator.ISLAND_SIZE + 1) / 2;
         result.get(centerY).set(centerX, (double) this.maxHeight);
 
         // set the edges to height 1
         result.get(0).set(centerX, 1d);
-        result.get(AIsland.ISLAND_SIZE - 1).set(centerX, 1d);
+        result.get(AIslandGenerator.ISLAND_SIZE - 1).set(centerX, 1d);
         result.get(centerY).set(0, 1d);
-        result.get(centerY).set(AIsland.ISLAND_SIZE - 1, 1d);
+        result.get(centerY).set(AIslandGenerator.ISLAND_SIZE - 1, 1d);
 
         this.generateTerrain(result, 0, 0, centerX, 0, centerX, centerY, 0,
                 centerY);
@@ -495,192 +452,237 @@ class RandomTerrainIsland extends AIsland {
         return results;
     }
 
-    RandomTerrainIsland(int maxHeight) {
+    RandomTerrainIslandGenerator(int maxHeight) {
         super(maxHeight);
     }
 }
 
-class ForbiddenIslandWorld extends World { // All the cells of the game,
-                                           // including the ocean
-    // IList<Cell> board; // the current height of the ocean
-    int waterHeight;
-
-    // The island of the world
-    AIsland island;
+class ForbiddenIslandWorld extends World { 
+    IList<Cell> board; // All the cells of the game,
+                       // including the ocean
+    int waterHeight;   // the current height of the ocean
+    
+    // the maximum height of the cells
+    int maxHeight;
 
     // Tick counter
     int tick;
 
     // draw the world
     public WorldScene makeScene() {
-        WorldScene scene = new WorldScene((AIsland.ISLAND_SIZE+1) * 10,
-                (AIsland.ISLAND_SIZE+1) * 10);
-        scene.placeImageXY(this.island.draw(waterHeight),
-                (int)((AIsland.ISLAND_SIZE / 2.0) * 10)+5, (int)((AIsland.ISLAND_SIZE / 2.0) * 10)+5);
+        WorldScene scene = new WorldScene((AIslandGenerator.ISLAND_SIZE+1) * 10,
+                (AIslandGenerator.ISLAND_SIZE+1) * 10);
+        scene.placeImageXY(this.draw(),
+                (int)((AIslandGenerator.ISLAND_SIZE / 2.0) * 10)+5, (int)((AIslandGenerator.ISLAND_SIZE / 2.0) * 10)+5);
         return scene;
     }
 
     // handle ticking
     public void onTick() {
-        this.tick = (this.tick + 1) % 5;
+        this.tick = (this.tick + 1) % 1;
         if (this.tick == 0) {
             this.waterHeight += 1;
-            this.island.flood(waterHeight);
+            this.flood();
         }
     }
 
-    // create a new ForbiddenIslandWorld with the given AIsland
-    ForbiddenIslandWorld(AIsland island) {
-        this.island = island;
+    // create a new ForbiddenIslandWorld with the given AIslandGenerator
+    ForbiddenIslandWorld(AIslandGenerator gen) {
+        this.board = gen.generateTerrain();
         this.waterHeight = 0;
         this.tick = 0;
+        this.maxHeight = gen.maxHeight;
     }
+    
+     // draw this world
+     WorldImage draw() {
+        WorldImage result = new EmptyImage();
+        ArrayList<WorldImage> rows = new ArrayList<WorldImage>();
+        
+        int idx = 0;
+        for (Cell cell : this.board) {
+            if (idx == 0) {
+                rows.add(new EmptyImage());
+            }
+            rows.set(rows.size() - 1, new BesideImage(rows.get(rows.size() - 1), cell.draw(this.waterHeight, this.maxHeight)));
+            idx += 1;
+            idx = idx % (AIslandGenerator.ISLAND_SIZE + 1);
+        }
+        
+        for (WorldImage image : rows) {
+            result = new AboveImage(result, image);
+        }
+        return result;
+    }
+     
+     // flood the world
+     // EFFECT: modifies the board
+     void flood() {
+         for(Cell cell : this.board) {
+             if (cell.left.isFlooded || cell.right.isFlooded
+                     || cell.top.isFlooded || cell.bottom.isFlooded) {
+                 cell.flood(this.waterHeight);
+             }
+         }
+     }
+     
+     // flood the world with the given water height
+     // EFFECT: modifies the board
+     void flood(int waterHeight) {
+         for(Cell cell : this.board) {
+             if (cell.left.isFlooded || cell.right.isFlooded
+                     || cell.top.isFlooded || cell.bottom.isFlooded) {
+                 cell.flood(waterHeight);
+             }
+         }   
+     }
 }
 
 class ExamplesIslandGame {
-    AIsland mountainIsland = new MountainIsland();
-    AIsland randomIsland = new RandomIsland();
-    AIsland randomTerrainIsland = new RandomTerrainIsland(128);
-    ForbiddenIslandWorld world;
+    AIslandGenerator mountainGen = new MountainIslandGenerator();
+    AIslandGenerator randomGen = new RandomIslandGenerator();
+    AIslandGenerator randomTerrainGen = new RandomTerrainIslandGenerator(128);
+    ForbiddenIslandWorld worldMountain;
+    ForbiddenIslandWorld worldRandom;
+    ForbiddenIslandWorld worldTerrain;
 
     void initializeIslands() {
-        this.mountainIsland.generateTerrain();
-        this.randomIsland.generateTerrain();
-        this.randomTerrainIsland.generateTerrain();
-        this.world = new ForbiddenIslandWorld(randomTerrainIsland);
+        this.worldMountain = new ForbiddenIslandWorld(mountainGen);
+        this.worldRandom = new ForbiddenIslandWorld(randomGen);
+        this.worldTerrain = new ForbiddenIslandWorld(randomTerrainGen);
     }
 
     // test manhattan distance
     void testManhattanDistance(Tester t) {
-        t.checkExpect(mountainIsland.manhattanDistance(20, 30, 60, 70), 80.0);
-        t.checkExpect(mountainIsland.manhattanDistance(30, 10, 10, 30), 40.0);
-        t.checkExpect(mountainIsland.manhattanDistance(10, 10, 20, 20), 20.0);
-        t.checkExpect(mountainIsland.manhattanDistance(60, 10, 50, 60), 60.0);
-        t.checkExpect(mountainIsland.manhattanDistance(60, 10, 10, 20), 60.0);
-        t.checkExpect(mountainIsland.manhattanDistance(50, 60, 30, 30), 50.0);
+        t.checkExpect(mountainGen.manhattanDistance(20, 30, 60, 70), 80.0);
+        t.checkExpect(mountainGen.manhattanDistance(30, 10, 10, 30), 40.0);
+        t.checkExpect(mountainGen.manhattanDistance(10, 10, 20, 20), 20.0);
+        t.checkExpect(mountainGen.manhattanDistance(60, 10, 50, 60), 60.0);
+        t.checkExpect(mountainGen.manhattanDistance(60, 10, 10, 20), 60.0);
+        t.checkExpect(mountainGen.manhattanDistance(50, 60, 30, 30), 50.0);
     }
 
     // test height generation
     void testGenerateHeight(Tester t) {
-        t.checkExpect(mountainIsland.generateHeights().get(61).get(43), -8.0);
-        t.checkExpect(mountainIsland.generateHeights().get(18).get(54), -4.0);
-        t.checkExpect(mountainIsland.generateHeights().get(46).get(26), 12.0);
-        t.checkExpect(mountainIsland.generateHeights().get(36).get(7), 3.0);
-        t.checkExpect(mountainIsland.generateHeights().get(41).get(55), 0.0);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(5)
+        t.checkExpect(mountainGen.generateHeights().get(61).get(43), -8.0);
+        t.checkExpect(mountainGen.generateHeights().get(18).get(54), -4.0);
+        t.checkExpect(mountainGen.generateHeights().get(46).get(26), 12.0);
+        t.checkExpect(mountainGen.generateHeights().get(36).get(7), 3.0);
+        t.checkExpect(mountainGen.generateHeights().get(41).get(55), 0.0);
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(5)
                 .get(13).height, 0.0);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(8)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(8)
                 .get(58).height, 0.0);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(1)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(1)
                 .get(33).height, 0.0);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(36)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(36)
                 .get(10).height, 6.0);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(56)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(56)
                 .get(10).height, 0.0);
 
-        t.checkExpect(randomIsland.generateHeights().get(54).get(45) >= 0,
+        t.checkExpect(randomGen.generateHeights().get(54).get(45) >= 0,
                 true);
-        t.checkExpect(randomIsland.generateHeights().get(2).get(44) >= 0, true);
-        t.checkExpect(randomIsland.generateHeights().get(48).get(39) >= 0,
+        t.checkExpect(randomGen.generateHeights().get(2).get(44) >= 0, true);
+        t.checkExpect(randomGen.generateHeights().get(48).get(39) >= 0,
                 true);
-        t.checkExpect(randomIsland.generateHeights().get(22).get(64) >= 0,
+        t.checkExpect(randomGen.generateHeights().get(22).get(64) >= 0,
                 true);
-        t.checkExpect(randomIsland.generateCells(randomIsland.generateHeights())
+        t.checkExpect(randomGen.generateCells(randomGen.generateHeights())
                 .get(36).get(25).height > 0, true);
         t.checkExpect(
-                randomIsland.generateCells(this.randomIsland.generateHeights())
+                randomGen.generateCells(this.randomGen.generateHeights())
                         .get(51).get(51).height > 0,
                 false);
         t.checkExpect(
-                randomIsland.generateCells(this.randomIsland.generateHeights())
+                randomGen.generateCells(this.randomGen.generateHeights())
                         .get(58).get(9).height > 0,
                 false);
         t.checkExpect(
-                randomIsland.generateCells(this.randomIsland.generateHeights())
+                randomGen.generateCells(this.randomGen.generateHeights())
                         .get(2).get(57).height > 0,
                 false);
         t.checkExpect(
-                randomIsland.generateCells(this.randomIsland.generateHeights())
+                randomGen.generateCells(this.randomGen.generateHeights())
                         .get(24).get(54).height > 0,
                 true);
         t.checkExpect(
-                randomIsland.generateCells(this.randomIsland.generateHeights())
+                randomGen.generateCells(this.randomGen.generateHeights())
                         .get(26).get(43).height > 0,
                 true);
         t.checkExpect(
-                randomIsland.generateCells(this.randomIsland.generateHeights())
+                randomGen.generateCells(this.randomGen.generateHeights())
                         .get(41).get(23).height > 0,
                 true);
     }
 
     // test flooding
-    void testFlood(Tester t) {
+    /*void testFlood(Tester t) {
         // test flooding on mountain terrain
-        mountainIsland.generateTerrain();
-        mountainIsland.flood(11);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(58)
+        mountainGen.generateTerrain();
+        mountainGen.flood(11);
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(58)
                 .get(51).isFlooded, true);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(24)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(24)
                 .get(6).isFlooded, true);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(53)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(53)
                 .get(2).isFlooded, true);
 
-        mountainIsland.generateTerrain();
-        mountainIsland.flood(31);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(14)
+        mountainGen.generateTerrain();
+        mountainGen.flood(31);
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(14)
                 .get(55).isFlooded, true);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(49)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(49)
                 .get(2).isFlooded, true);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(63)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(63)
                 .get(33).isFlooded, true);
 
-        mountainIsland.generateTerrain();
-        mountainIsland.flood(16);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(49)
+        mountainGen.generateTerrain();
+        mountainGen.flood(16);
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(49)
                 .get(38).isFlooded, false);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(27)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(27)
                 .get(31).isFlooded, false);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(50)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(50)
                 .get(3).isFlooded, true);
 
-        mountainIsland.generateTerrain();
-        mountainIsland.flood(9);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(12)
+        mountainGen.generateTerrain();
+        mountainGen.flood(9);
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(12)
                 .get(29).isFlooded, false);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(37)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(37)
                 .get(12).isFlooded, false);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(23)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(23)
                 .get(39).isFlooded, false);
 
-        mountainIsland.generateTerrain();
-        mountainIsland.flood(31);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(3)
+        mountainGen.generateTerrain();
+        mountainGen.flood(31);
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(3)
                 .get(34).isFlooded, false);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(42)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(42)
                 .get(57).isFlooded, true);
-        t.checkExpect(mountainIsland
-                .generateCells(this.mountainIsland.generateHeights()).get(36)
+        t.checkExpect(mountainGen
+                .generateCells(this.mountainGen.generateHeights()).get(36)
                 .get(29).isFlooded, false);
-    }
+    }*/
 
     // test drawing cells
     void testCellDraws(Tester t) {
@@ -710,6 +712,6 @@ class ExamplesIslandGame {
     // run the game
     void testGame(Tester t) {
         this.initializeIslands();
-        this.world.bigBang(650, 650, .016);
+        this.worldTerrain.bigBang(650, 650, .016);
     }
 }
