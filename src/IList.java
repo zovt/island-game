@@ -99,7 +99,7 @@ class ExamplesLists {
     void testAsIsCons(Tester t) {
         t.checkExpect(l1.isCons(), false);
         t.checkExpect(l2.isCons(), true);
-        t.checkException(new RuntimeException("Empty is not cons"), mt,
+        t.checkException(new RuntimeException("Empty is not Cons."), mt,
                 "asCons");
         t.checkExpect(l2.asCons(), l2);
     }
