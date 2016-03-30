@@ -15,9 +15,14 @@ class Cell {
     double height;
     // In logical coordinates, with the origin at the top-left corner of the
     // screen
-    int x, y;
+    int x;
+    int y;
     // the four adjacent cells to this one
-    Cell left, top, right, bottom;
+    Cell left;
+    Cell top;
+    Cell right;
+    Cell bottom;
+    
     // reports whether this cell is flooded or not
     boolean isFlooded;
 
@@ -74,7 +79,8 @@ class Cell {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
                     this.mix(maxNoFlood, minNoFlood,
                             (this.height - waterHeight) / maxHeight));
-        } else {
+        }
+        else {
             return new RectangleImage(10, 10, OutlineMode.SOLID,
                     this.mix(maxToFlood, minToFlood,
                             Math.min(Math.sqrt(
@@ -235,7 +241,8 @@ abstract class DiamondIsland extends AIsland {
                         centerY) < this.oceanDistance) {
                     double height = heights.get(i).get(j);
                     cellRow.add(new Cell(height, j, i));
-                } else {
+                }
+                else {
                     cellRow.add(new OceanCell(j, i));
                 }
             }
@@ -319,10 +326,11 @@ class RandomIsland extends DiamondIsland {
 class RandomTerrainIsland extends AIsland {
     // generate the nudge
     double nudge(double area) {
-        if (Math.random() <= .32) {
+        if (Math.random() <= .5) {
             return -1 * Math.random() * area
                     + (Math.random() * this.maxHeight) / this.maxHeight;
-        } else {
+        }
+        else {
             return Math.random() * area
                     + (Math.random() * this.maxHeight) / this.maxHeight;
         }
@@ -401,12 +409,14 @@ class RandomTerrainIsland extends AIsland {
             double m = this.nudge(area) + (terrain.get(tLY).get(tLX)
                     + terrain.get(tRY).get(tRX) + terrain.get(bRY).get(bRX)
                     + terrain.get(bLY).get(bLX)) / 4;
+            
+            int minHeight = -30;
 
-            t = Math.min(this.maxHeight, t);
-            r = Math.min(this.maxHeight, r);
-            b = Math.min(this.maxHeight, b);
-            l = Math.min(this.maxHeight, l);
-            m = Math.min(this.maxHeight, m);
+            t = Math.max(Math.min(this.maxHeight, t), minHeight);
+            r = Math.max(Math.min(this.maxHeight, r), minHeight);
+            b = Math.max(Math.min(this.maxHeight, b), minHeight);
+            l = Math.max(Math.min(this.maxHeight, l), minHeight);
+            m = Math.max(Math.min(this.maxHeight, m), minHeight);
 
             if (terrain.get(tY).get(tX) == 0) {
                 terrain.get(tY).set(tX, t);
@@ -439,7 +449,8 @@ class RandomTerrainIsland extends AIsland {
             for (int j = 0; j < heights.get(i).size(); j += 1) {
                 if (heights.get(i).get(j) <= 0) {
                     cellRow.add(new OceanCell(j, i));
-                } else {
+                }
+                else {
                     cellRow.add(new Cell(heights.get(i).get(j), j, i));
                 }
             }
@@ -466,16 +477,16 @@ class ForbiddenIslandWorld extends World { // All the cells of the game,
 
     // draw the world
     public WorldScene makeScene() {
-        WorldScene scene = new WorldScene(AIsland.ISLAND_SIZE * 10,
-                AIsland.ISLAND_SIZE * 10);
+        WorldScene scene = new WorldScene((AIsland.ISLAND_SIZE+1) * 10,
+                (AIsland.ISLAND_SIZE+1) * 10);
         scene.placeImageXY(this.island.draw(waterHeight),
-                AIsland.ISLAND_SIZE / 2 * 10, AIsland.ISLAND_SIZE / 2 * 10);
+                (int)((AIsland.ISLAND_SIZE / 2.0) * 10)+5, (int)((AIsland.ISLAND_SIZE / 2.0) * 10)+5);
         return scene;
     }
 
     // handle ticking
     public void onTick() {
-        this.tick = (this.tick + 1) % 1;
+        this.tick = (this.tick + 1) % 5;
         if (this.tick == 0) {
             this.waterHeight += 1;
             this.island.flood(waterHeight);
@@ -503,7 +514,7 @@ class ExamplesIslandGame {
         this.world = new ForbiddenIslandWorld(randomTerrainIsland);
     }
 
-    // test manhattan distance 
+    // test manhattan distance
     void testManhattanDistance(Tester t) {
         t.checkExpect(mountainIsland.manhattanDistance(20, 30, 60, 70), 80.0);
         t.checkExpect(mountainIsland.manhattanDistance(30, 10, 10, 30), 40.0);
@@ -634,32 +645,35 @@ class ExamplesIslandGame {
                 .generateCells(this.mountainIsland.generateHeights()).get(36)
                 .get(29).isFlooded, false);
     }
-    
+
     // test drawing cells
     void testCellDraws(Tester t) {
         Cell cell = new Cell(10, 10, 10);
         cell.isFlooded = true;
-        t.checkExpect(cell.draw(20, 64), new RectangleImage(10, 10, OutlineMode.SOLID,
-                cell.mix(new Color(0.0f, 0.0f, 1.0f), new Color(0.0f, 0.35f, 0.5f),
-                        Math.min(Math.sqrt(
-                                (20 - cell.height) / 64),
-                        1.0f))));
+        t.checkExpect(cell.draw(20, 64),
+                new RectangleImage(10, 10, OutlineMode.SOLID,
+                        cell.mix(
+                                new Color(0.0f, 0.0f, 1.0f), new Color(0.0f,
+                                        0.35f, 0.5f),
+                        Math.min(Math.sqrt((20 - cell.height) / 64), 1.0f))));
         cell.isFlooded = false;
-        t.checkExpect(cell.draw(25, 128), new RectangleImage(10, 10, OutlineMode.SOLID,
-                    cell.mix(Color.red, new Color(0.25f, 0.5f, 0.0f),
-                            Math.min(Math.sqrt(
-                                    (25 - cell.height) / 128),
-                            1.0f))));
-        t.checkExpect(cell.draw(8, 128), new RectangleImage(10, 10, OutlineMode.SOLID,
-                cell.mix(Color.white, new Color(0.0f, 0.5f, 0.0f), (cell.height - 8) / 128)));
-        OceanCell oCell = new OceanCell(10, 10);        
-        t.checkExpect(oCell.draw(100, 128), new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE));
-
+        t.checkExpect(cell.draw(25, 128),
+                new RectangleImage(10, 10, OutlineMode.SOLID,
+                        cell.mix(Color.red, new Color(0.25f, 0.5f,
+                                0.0f),
+                        Math.min(Math.sqrt((25 - cell.height) / 128), 1.0f))));
+        t.checkExpect(cell.draw(8, 128),
+                new RectangleImage(10, 10, OutlineMode.SOLID,
+                        cell.mix(Color.white, new Color(0.0f, 0.5f, 0.0f),
+                                (cell.height - 8) / 128)));
+        OceanCell oCell = new OceanCell(10, 10);
+        t.checkExpect(oCell.draw(100, 128),
+                new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE));
     }
-    
+
     // run the game
     void testGame(Tester t) {
         this.initializeIslands();
-       // this.world.bigBang(640, 640, .016);
+        this.world.bigBang(650, 650, .016);
     }
 }
