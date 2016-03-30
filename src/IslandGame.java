@@ -687,8 +687,8 @@ class ExamplesPlay {
     }
     
     // run the game
-    void testGame(Tester t) {
+    /*void testGame(Tester t) {
         this.initializeIslands();
         this.worldMountain.bigBang(650, 650, .016);
-    }
+    }*/
 }
