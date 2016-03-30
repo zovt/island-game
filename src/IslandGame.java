@@ -100,6 +100,12 @@ class Cell {
             this.bottom.flood(waterHeight);
         }
     }
+
+    // add self to list if you are an ocean cell
+    // EFFECT: modifies the list
+    void addIfOcean(ArrayList<OceanCell> list) {
+        // do nothing
+    }
 }
 
 // An OceanCell
@@ -122,6 +128,12 @@ class OceanCell extends Cell {
     // flood this oceanCell
     void flood(int waterHeight) {
         // do nothing
+    }
+    
+    // add self to list if you are an ocean cell
+    // EFFECT: modifies the list
+    void addIfOcean(ArrayList<OceanCell> list) {
+        list.add(this);
     }
 }
 
@@ -209,6 +221,30 @@ abstract class AIsland {
                 }
             }
         }
+    }
+    
+    // find all cells on the coast
+    ArrayList<Cell> coastline() {
+        ArrayList<OceanCell> water = this.findOcean();
+        return this.findCoast(water);
+    }
+    
+    // find all ocean cells in the terrain
+    ArrayList<OceanCell> findOcean() {
+        ArrayList<OceanCell> result = new ArrayList<OceanCell>();
+        for(ArrayList<Cell> row : this.terrain) {
+            for(Cell cell : row) {
+                cell.addIfOcean(result);
+            }
+        }
+        return result;
+    }
+    
+    // find the coast given a list of ocean cells
+    ArrayList<Cell> findCoast(ArrayList<OceanCell> water) {
+        ArrayList<Cell> result = new ArrayList<Cell>();
+        
+        return result;
     }
 
     AIsland() {
