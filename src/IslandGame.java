@@ -503,13 +503,7 @@ class ExamplesIslandGame {
         this.world = new ForbiddenIslandWorld(randomTerrainIsland);
     }
 
-    void testIslands(Tester t) {
-        this.initializeIslands();
-        // this.world.bigBang(640, 640, .016);
-    }
-
-    // stuff to check manhattanDistance, generateHeights, generateCells, flood,
-    // fixNeighbors,
+    // test manhattan distance 
     void testManhattanDistance(Tester t) {
         t.checkExpect(mountainIsland.manhattanDistance(20, 30, 60, 70), 80.0);
         t.checkExpect(mountainIsland.manhattanDistance(30, 10, 10, 30), 40.0);
@@ -519,6 +513,7 @@ class ExamplesIslandGame {
         t.checkExpect(mountainIsland.manhattanDistance(50, 60, 30, 30), 50.0);
     }
 
+    // test height generation
     void testGenerateHeight(Tester t) {
         t.checkExpect(mountainIsland.generateHeights().get(61).get(43), -8.0);
         t.checkExpect(mountainIsland.generateHeights().get(18).get(54), -4.0);
@@ -576,6 +571,7 @@ class ExamplesIslandGame {
                 true);
     }
 
+    // test flooding
     void testFlood(Tester t) {
         // test flooding on mountain terrain
         mountainIsland.generateTerrain();
@@ -637,5 +633,33 @@ class ExamplesIslandGame {
         t.checkExpect(mountainIsland
                 .generateCells(this.mountainIsland.generateHeights()).get(36)
                 .get(29).isFlooded, false);
+    }
+    
+    // test drawing cells
+    void testCellDraws(Tester t) {
+        Cell cell = new Cell(10, 10, 10);
+        cell.isFlooded = true;
+        t.checkExpect(cell.draw(20, 64), new RectangleImage(10, 10, OutlineMode.SOLID,
+                cell.mix(new Color(0.0f, 0.0f, 1.0f), new Color(0.0f, 0.35f, 0.5f),
+                        Math.min(Math.sqrt(
+                                (20 - cell.height) / 64),
+                        1.0f))));
+        cell.isFlooded = false;
+        t.checkExpect(cell.draw(25, 128), new RectangleImage(10, 10, OutlineMode.SOLID,
+                    cell.mix(Color.red, new Color(0.25f, 0.5f, 0.0f),
+                            Math.min(Math.sqrt(
+                                    (25 - cell.height) / 128),
+                            1.0f))));
+        t.checkExpect(cell.draw(8, 128), new RectangleImage(10, 10, OutlineMode.SOLID,
+                cell.mix(Color.white, new Color(0.0f, 0.5f, 0.0f), (cell.height - 8) / 128)));
+        OceanCell oCell = new OceanCell(10, 10);        
+        t.checkExpect(oCell.draw(100, 128), new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE));
+
+    }
+    
+    // run the game
+    void testGame(Tester t) {
+        this.initializeIslands();
+       // this.world.bigBang(640, 640, .016);
     }
 }
