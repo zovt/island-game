@@ -21,6 +21,11 @@ class IListIterator<T> implements Iterator<T> {
         list = list.asCons().next;
         return item;
     }
+    
+    // remove
+    public void remove() {
+        throw new RuntimeException("Unimplemented");
+    }
 }
 
 // a list
