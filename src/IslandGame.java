@@ -485,6 +485,11 @@ abstract class Target {
         }
         return current;
     }
+    
+    // check if the player is colliding with this target
+    boolean collide(Player player) {
+        return player.link == this.link;
+    }
 }
 
 class PieceTarget extends Target {
@@ -640,7 +645,7 @@ class ForbiddenIslandWorld extends World {
         if (this.isOver()) {
             return new WorldEnd(true, this.makeAFinalScene("You lose"));
         } 
-        else if(!this.items.isCons() && this.player.link.equals(this.helicopter)) {
+        else if(!this.items.isCons() && this.player.link == this.helicopter.link) {
             return new WorldEnd(true, this.makeAFinalScene("You win"));
         }
         else {
@@ -784,6 +789,11 @@ class ForbiddenIslandWorld extends World {
         
         res = res && this.player.isAlive() && this.helicopter.isAlive();
         return !res;
+    }
+    
+    // check if we win
+    boolean isWin() {
+        return !this.items.isCons() && this.helicopter.collide(this.player);
     }
 }
 
@@ -934,6 +944,6 @@ class ExamplesPlay {
     
     void testGame(Tester t) {
         this.initializeIslands();
-        this.worldMountain.bigBang(Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), .016);
+        this.worldTerrain.bigBang(Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), .016);
     }
 }
