@@ -595,6 +595,13 @@ class Player {
     }
 }
 
+enum WorldState {
+    Menu,
+    InGame,
+    Win,
+    Lose
+}
+
 class ForbiddenIslandWorld extends World {
     IList<Cell> board; // All the cells of the game,
                        // including the ocean
@@ -617,104 +624,74 @@ class ForbiddenIslandWorld extends World {
     
     // Island Generators
     AIslandGenerator mountain = new MountainIslandGenerator();
-    AIslandGenerator random = new MountainIslandGenerator();
+    AIslandGenerator random = new RandomIslandGenerator();
     AIslandGenerator terrain = new RandomTerrainIslandGenerator(128);
     
-    // check if this world has been initialized
-    boolean isInitialized = false;
-
-    // create a new ForbiddenIslandWorld with the given AIslandGenerator
-    ForbiddenIslandWorld() {
-        this.board = this.terrain.generateTerrain();
-        this.waterHeight = 0;
-        this.tick = 0;
-        this.maxHeight = this.terrain.maxHeight;
-        
-        this.createTargets();
-        this.createPlayer();
-        this.createHelicopter();
+    // World State
+    WorldState state = WorldState.Menu;
+    
+    // creates a default IslandWorld
+    ForbiddenIslandWorld() {}
+    
+    // creates an IslandWorld using the given generator
+    ForbiddenIslandWorld(AIslandGenerator gen) {
+        this.reset(gen);
     }
 
     // draw the world
     public WorldScene makeScene() {
-        WorldScene scene = new WorldScene(
+        if (this.state == WorldState.Menu) {
+            return this.makeMenuScene();
+        }
+        else if (this.state == WorldState.InGame) {
+            return this.makeGameScene();
+        }
+        else if (this.state == WorldState.Lose) {
+            return this.makeLoseScene();
+        }
+        else if (this.state == WorldState.Win) {
+            return this.makeWinScene();
+        }
+        return defaultScene();
+    }
+    
+    WorldScene defaultScene() {
+        return new WorldScene(
                 (AIslandGenerator.ISLAND_SIZE + 1) * 10,
                 (AIslandGenerator.ISLAND_SIZE + 1) * 10);
-        scene.placeImageXY(this.draw(),
+    }
+    
+    WorldScene makeMenuScene() {
+        WorldScene res = this.defaultScene();
+        WorldImage text = new TextImage("m - mountain | r - random | t - terrain", 30, Color.BLACK);
+        res.placeImageXY(text, 300, 300);
+        return res;
+    }
+    
+    WorldScene makeGameScene() {
+        WorldScene scene = this.defaultScene();
+        scene.placeImageXY(this.drawInGame(),
                 (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5,
                 (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5);
         return scene;
     }
-
-    // handle ticking
-    public void onTick() {
-        this.tick = (this.tick + 1) % 10;
-        if (this.tick == 0) {
-            this.waterHeight += 1;
-            this.flood();
-        }
-        
-        // check game state
-        this.worldEnds();
-        
-        // check collisions
-        this.checkCollisions();
+    
+    WorldScene makeLoseScene() {
+        WorldScene scene = this.defaultScene();
+        WorldImage lose = new TextImage("You lose", 30, Color.BLACK);
+        scene.placeImageXY(lose, 300, 300);
+        return scene;
     }
     
-    public WorldEnd worldEnds() {
-        if (this.isOver()) {
-            return new WorldEnd(true, this.makeAFinalScene("You lose"));
-        } 
-        else if(!this.items.isCons() && this.player.link == this.helicopter.link) {
-            return new WorldEnd(true, this.makeAFinalScene("You win"));
-        }
-        else {
-            return new WorldEnd(false, this.makeAFinalScene("Null"));
-        }
+    WorldScene makeWinScene() {
+        WorldScene scene = this.defaultScene();
+        WorldImage lose = new TextImage("You win", 30, Color.BLACK);
+        scene.placeImageXY(lose, 300, 300);
+        return scene;
     }
     
-    // handle keys
-    public void onKeyEvent(String key) {
-        System.out.println(key);
-        this.player.handleKey(key);
-    }
-    
-    // get a random non-flooded cell from the list of cells
-    Cell getRandomDry() {
-        int rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
-        
-        while (this.board.get(rand).isFlooded) {
-            rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
-        }
-        
-        return this.board.get(rand);
-    }
-    
-    // place items in the world
-    // EFFECT: initializes the targets
-    void createTargets() {
-        IList<Target> targets = new Empty<Target>();
-        
-        for(int i = 0; i < 3; i++) {
-            targets = new Cons<Target>(new PieceTarget(this.getRandomDry()), targets);
-        }
-        this.items = targets;
-    }
-    
-    // place player in the world
-    // EFFECT: initializes the player
-    void createPlayer() {
-        this.player = new Player(this.getRandomDry());
-    }
-    
-    // place helicopter
-    // EFFECT: initializes helicopter
-    void createHelicopter() {
-        this.helicopter = new HelicopterTarget(this.getRandomDry());
-    }
-
-    // draw this world
-    WorldImage draw() {
+    // draw the in-game screen
+    WorldImage drawInGame() {
         WorldImage result = new EmptyImage();
         ArrayList<WorldImage> rows = new ArrayList<WorldImage>();
 
@@ -742,18 +719,91 @@ class ForbiddenIslandWorld extends World {
         
         return result;
     }
+
+    // handle ticking
+    public void onTick() {
+        if (this.state == WorldState.InGame) {
+            this.tick = (this.tick + 1) % 10;
+            if (this.tick == 0) {
+                this.waterHeight += 1;
+                this.flood();
+            }
+            
+            // check collisions with targets
+            this.checkCollisions();
+        
+            // check game state
+            this.updateState();
+        }
+    }
     
-    // draw the last state of the world
-    public WorldScene makeAFinalScene(String msg) {
-        WorldImage text = new TextImage(msg, 30, Color.BLACK);
+    public void updateState() {
+        if (this.isOver()) {
+            this.state = WorldState.Lose;
+        } else if (this.isWin()) {
+            this.state = WorldState.Win;
+        }
+    }
+    
+    // handle keys
+    public void onKeyEvent(String key) {
+        if (this.state == WorldState.InGame) {
+            this.player.handleKey(key);
+            this.onTick();
+        } else {
+            this.handleReset(key);
+        }
+    }
+    
+    // handle resetting based on key
+    void handleReset(String key) {
+        switch(key) {
+        case "m":
+            this.reset(this.mountain);
+            break;
+            
+        case "r":
+            this.reset(this.random);
+            break;
+
+        case "t":
+            this.reset(this.terrain);
+            break;
+        }
+    }
+    
+    // get a random non-flooded cell from the list of cells
+    Cell getRandomDry() {
+        int rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
         
-        WorldScene scene = new WorldScene(
-                (AIslandGenerator.ISLAND_SIZE + 1) * 10,
-                (AIslandGenerator.ISLAND_SIZE + 1) * 10);
+        while (this.board.get(rand).isFlooded) {
+            rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
+        }
         
-        scene.placeImageXY(text, 300, 300);
+        return this.board.get(rand);
+    }
+    
+    // place items in the world
+    // EFFECT: initializes the targets
+    void createTargets() {
+        IList<Target> targets = new Empty<Target>();
         
-        return scene;
+        for(int i = 0; i < 5; i++) {
+            targets = new Cons<Target>(new PieceTarget(this.getRandomDry()), targets);
+        }
+        this.items = targets;
+    }
+    
+    // place player in the world
+    // EFFECT: initializes the player
+    void createPlayer() {
+        this.player = new Player(this.getRandomDry());
+    }
+    
+    // place helicopter
+    // EFFECT: initializes helicopter
+    void createHelicopter() {
+        this.helicopter = new HelicopterTarget(this.getRandomDry());
     }
 
     // flood the world
@@ -813,6 +863,8 @@ class ForbiddenIslandWorld extends World {
         this.createPlayer();
         this.createHelicopter();
         this.createTargets();
+        
+        this.state = WorldState.InGame;
     }
 }
 
