@@ -472,6 +472,11 @@ abstract class Target {
     }
     
     abstract WorldImage draw();
+    
+    // check if this target is alive
+    boolean isAlive() {
+        return !this.link.isFlooded;
+    }
 }
 
 class PieceTarget extends Target {
@@ -509,6 +514,71 @@ class Player {
         WorldImage empty = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
         WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
         return new OverlayImage(onEmpty, world);
+    }
+    
+    void handleKey(String key) {
+        switch(key) {
+        case "up":
+            this.moveUp();
+            break;
+            
+        case "down":
+            this.moveDown();
+            break;
+            
+        case "right":
+            this.moveRight();
+            break;
+            
+        case "left":
+            this.moveLeft();
+            break;
+            
+        default:
+            break;
+        }
+    }
+    
+    // check if the move is legal
+    boolean isLegalMove(Cell next) {
+        return !next.isFlooded;
+    }
+    
+    // Move player up
+    // EFFECT: modifies link
+    void moveUp() {
+        if (this.isLegalMove(this.link.top)) {
+            this.link = this.link.top;
+        }
+    }
+    
+    // Move player down
+    // EFFECT: modifies link
+    void moveDown() {
+        if (this.isLegalMove(this.link.bottom)) {
+            this.link = this.link.bottom;
+        }
+    }
+    
+    // Move player left
+    // EFFECT: modifies link
+    void moveLeft() {
+        if (this.isLegalMove(this.link.left)) {
+            this.link = this.link.left;
+        }
+    }
+    
+    // Move player right
+    // EFFECT: modifies link
+    void moveRight() {
+        if (this.isLegalMove(this.link.right)) {
+            this.link = this.link.right;
+        }
+    }
+    
+    // check if the player is alive
+    boolean isAlive() {
+        return !this.link.isFlooded;
     }
 }
 
@@ -552,17 +622,21 @@ class ForbiddenIslandWorld extends World {
         }
     }
     
+    // handle keys
+    public void onKeyEvent(String key) {
+        System.out.println(key);
+        this.player.handleKey(key);
+    }
+    
     // get a random non-flooded cell from the list of cells
     Cell getRandomDry() {
-        int randX = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1));
-        int randY = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1));
+        int rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
         
-        while (this.board.get(randX * randY).isFlooded) {
-            randX = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1));
-            randY = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1));
+        while (this.board.get(rand).isFlooded) {
+            rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
         }
         
-        return this.board.get(randX * randY);
+        return this.board.get(rand);
     }
     
     // place items in the world
