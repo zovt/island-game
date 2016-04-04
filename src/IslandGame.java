@@ -620,6 +620,16 @@ class ForbiddenIslandWorld extends World {
             this.waterHeight += 1;
             this.flood();
         }
+        
+        // check game state
+        this.worldEnds();
+    }
+    
+    public WorldEnd worldEnds() {
+        if (this.isOver()) {
+            return new WorldEnd(true, this.makeAFinalScene("You lose"));
+        }
+        return new WorldEnd(false, this.makeScene());
     }
     
     // handle keys
@@ -644,8 +654,6 @@ class ForbiddenIslandWorld extends World {
     void createTargets() {
         IList<Target> targets = new Empty<Target>();
         
-
-        
         for(int i = 0; i < 3; i++) {
             targets = new Cons<Target>(new PieceTarget(this.getRandomDry()), targets);
         }
@@ -657,7 +665,6 @@ class ForbiddenIslandWorld extends World {
     void createPlayer() {
         this.player = new Player(this.getRandomDry());
     }
-    
     
     // place helicopter
     // EFFECT: initializes helicopter
@@ -706,6 +713,19 @@ class ForbiddenIslandWorld extends World {
         
         return result;
     }
+    
+    // draw the last state of the world
+    public WorldScene makeAFinalScene(String msg) {
+        WorldImage text = new TextImage(msg, 30, Color.BLACK);
+        
+        WorldScene scene = new WorldScene(
+                (AIslandGenerator.ISLAND_SIZE + 1) * 10,
+                (AIslandGenerator.ISLAND_SIZE + 1) * 10);
+        
+        scene.placeImageXY(text, 300, 300);
+        
+        return scene;
+    }
 
     // flood the world
     // EFFECT: modifies the board
@@ -727,6 +747,17 @@ class ForbiddenIslandWorld extends World {
                 cell.flood(waterHeight);
             }
         }
+    }
+    
+    // check if we have lost
+    boolean isOver() {
+        boolean res = true;
+        for (Target t : this.items) {
+            res = res && t.isAlive();
+        }
+        
+        res = res && this.player.isAlive() && this.helicopter.isAlive();
+        return !res;
     }
 }
 
