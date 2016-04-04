@@ -679,14 +679,18 @@ class ForbiddenIslandWorld extends World {
     WorldScene makeLoseScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You lose", 30, Color.BLACK);
+        WorldImage menu = new TextImage("m - mountain | r - random | t - terrain", 30, Color.BLACK);
         scene.placeImageXY(lose, 300, 300);
+        scene.placeImageXY(menu, 300, 400);
         return scene;
     }
     
     WorldScene makeWinScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You win", 30, Color.BLACK);
+        WorldImage menu = new TextImage("m - mountain | r - random | t - terrain", 30, Color.BLACK);
         scene.placeImageXY(lose, 300, 300);
+        scene.placeImageXY(menu, 300, 400);
         return scene;
     }
     
