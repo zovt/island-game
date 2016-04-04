@@ -466,7 +466,9 @@ abstract class Target {
     }
     
     WorldImage drawInto(WorldImage world) {
-        return new OverlayOffsetImage(world, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
+        WorldImage empty = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
+        WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
+        return new OverlayImage(onEmpty, world);    
     }
     
     abstract WorldImage draw();
@@ -504,8 +506,9 @@ class Player {
     }
     
     WorldImage drawInto(WorldImage world) {
-        WorldImage empty = new EmptyImage();
-        return new OverlayOffsetImage(world, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
+        WorldImage empty = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
+        WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
+        return new OverlayImage(onEmpty, world);
     }
 }
 
