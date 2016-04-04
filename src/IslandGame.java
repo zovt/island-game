@@ -218,7 +218,7 @@ abstract class AIslandGenerator {
 abstract class DiamondIslandGenerator extends AIslandGenerator {
     // The distance from the center of the island at which the ocean starts
     // (32 by default)
-    int oceanDistance;
+    int oceanDistance = 32;
 
     // generate the cells for this mountain island based on their heights
     public ArrayList<ArrayList<Cell>> generateCells(
@@ -249,8 +249,8 @@ abstract class DiamondIslandGenerator extends AIslandGenerator {
         this.oceanDistance = 32;
     }
 
-    DiamondIslandGenerator(int oceanDistance) {
-        this.oceanDistance = oceanDistance;
+    DiamondIslandGenerator(int maxHeight) {
+        this.maxHeight = maxHeight;
     }
 }
 
@@ -281,7 +281,10 @@ class MountainIslandGenerator extends DiamondIslandGenerator {
 
         return heights;
     }
-
+    
+    MountainIslandGenerator (int maxHeight) {
+        super(maxHeight);
+    }
 }
 
 // A Diamond-shaped island with random heights
@@ -314,6 +317,10 @@ class RandomIslandGenerator extends DiamondIslandGenerator {
 
     RandomIslandGenerator() {
         this.maxHeight = 64;
+    }
+    
+    RandomIslandGenerator(int maxHeight) {
+        super(maxHeight);
     }
 }
 
@@ -623,8 +630,8 @@ class ForbiddenIslandWorld extends World {
     HelicopterTarget helicopter;
     
     // Island Generators
-    AIslandGenerator mountain = new MountainIslandGenerator();
-    AIslandGenerator random = new RandomIslandGenerator();
+    AIslandGenerator mountain = new MountainIslandGenerator(64);
+    AIslandGenerator random = new RandomIslandGenerator(64);
     AIslandGenerator terrain = new RandomTerrainIslandGenerator(128);
     
     // World State
@@ -873,8 +880,8 @@ class ForbiddenIslandWorld extends World {
 }
 
 class ExamplesIslandGame {
-    AIslandGenerator mountainGen = new MountainIslandGenerator();
-    AIslandGenerator randomGen = new RandomIslandGenerator();
+    AIslandGenerator mountainGen = new MountainIslandGenerator(128);
+    AIslandGenerator randomGen = new RandomIslandGenerator(128);
     AIslandGenerator randomTerrainGen = new RandomTerrainIslandGenerator(128);
     ForbiddenIslandWorld worldMountain;
     ForbiddenIslandWorld worldRandom;
@@ -1003,8 +1010,8 @@ class ExamplesIslandGame {
 }
 
 class ExamplesPlay {
-    AIslandGenerator mountainGen = new MountainIslandGenerator();
-    AIslandGenerator randomGen = new RandomIslandGenerator();
+    AIslandGenerator mountainGen = new MountainIslandGenerator(128);
+    AIslandGenerator randomGen = new RandomIslandGenerator(128);
     AIslandGenerator randomTerrainGen = new RandomTerrainIslandGenerator(128);
     ForbiddenIslandWorld worldMountain;
     ForbiddenIslandWorld worldRandom;
