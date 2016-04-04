@@ -602,11 +602,32 @@ class Player {
     }
 }
 
-enum WorldState {
-    Menu,
-    InGame,
-    Win,
-    Lose
+interface WorldState {
+    boolean check(String s);
+}
+
+class Menu implements WorldState {
+    public boolean check(String s) {
+        return s.equals("menu");
+    }
+}
+
+class InGame implements WorldState {
+    public boolean check(String s) {
+        return s.equals("ingame");
+    }
+}
+
+class Lose implements WorldState {
+    public boolean check(String s) {
+        return s.equals("lose");
+    }
+}
+
+class Win implements WorldState {
+    public boolean check(String s) {
+        return s.equals("win");
+    }
 }
 
 class ForbiddenIslandWorld extends World {
@@ -635,7 +656,7 @@ class ForbiddenIslandWorld extends World {
     AIslandGenerator terrain = new RandomTerrainIslandGenerator(128);
     
     // World State
-    WorldState state = WorldState.Menu;
+    WorldState state = new Menu();
     
     // creates a default IslandWorld
     ForbiddenIslandWorld() {}
@@ -647,16 +668,16 @@ class ForbiddenIslandWorld extends World {
 
     // draw the world
     public WorldScene makeScene() {
-        if (this.state == WorldState.Menu) {
+        if (this.state.check("menu")) {
             return this.makeMenuScene();
         }
-        else if (this.state == WorldState.InGame) {
+        else if (this.state.check("ingame")) {
             return this.makeGameScene();
         }
-        else if (this.state == WorldState.Lose) {
+        else if (this.state.check("lose")) {
             return this.makeLoseScene();
         }
-        else if (this.state == WorldState.Win) {
+        else if (this.state.check("win")) {
             return this.makeWinScene();
         }
         return defaultScene();
@@ -733,7 +754,7 @@ class ForbiddenIslandWorld extends World {
 
     // handle ticking
     public void onTick() {
-        if (this.state == WorldState.InGame) {
+        if (this.state.check("ingame")) {
             this.tick = (this.tick + 1) % 10;
             if (this.tick == 0) {
                 this.waterHeight += 1;
@@ -750,15 +771,15 @@ class ForbiddenIslandWorld extends World {
     
     public void updateState() {
         if (this.isOver()) {
-            this.state = WorldState.Lose;
+            this.state = new Lose();
         } else if (this.isWin()) {
-            this.state = WorldState.Win;
+            this.state = new Win();
         }
     }
     
     // handle keys
     public void onKeyEvent(String key) {
-        if (this.state == WorldState.InGame) {
+        if (this.state.check("ingame")) {
             this.player.handleKey(key);
             this.onTick();
         } else {
@@ -875,7 +896,7 @@ class ForbiddenIslandWorld extends World {
         this.createHelicopter();
         this.createTargets();
         
-        this.state = WorldState.InGame;
+        this.state = new InGame();
     }
 }
 
