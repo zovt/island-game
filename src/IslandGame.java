@@ -477,6 +477,14 @@ abstract class Target {
     boolean isAlive() {
         return !this.link.isFlooded;
     }
+    
+    // check if a player is on this target. If he isn't, add this item to the given list
+    IList<Target> pickup(Player player, IList<Target> current) {
+        if (player.link != this.link) {
+            current = new Cons<Target>(this, current);
+        }
+        return current;
+    }
 }
 
 class PieceTarget extends Target {
@@ -495,7 +503,7 @@ class HelicopterTarget extends Target {
     }
     
     WorldImage draw() {
-        return new CircleImage(4, OutlineMode.SOLID, Color.YELLOW);
+        return new CircleImage(4, OutlineMode.SOLID, Color.ORANGE);
     }    
 }
 
@@ -623,6 +631,9 @@ class ForbiddenIslandWorld extends World {
         
         // check game state
         this.worldEnds();
+        
+        // check collisions
+        this.checkCollisions();
     }
     
     public WorldEnd worldEnds() {
@@ -747,6 +758,16 @@ class ForbiddenIslandWorld extends World {
                 cell.flood(waterHeight);
             }
         }
+    }
+    
+    // update the targets to remove the ones that the player has landed on
+    void checkCollisions() {
+        IList<Target> res = new Empty<Target>();
+        for(Target t : this.items) {
+            res = t.pickup(this.player, res);
+        }
+        
+        this.items = res;
     }
     
     // check if we have lost
