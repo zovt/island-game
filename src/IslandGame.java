@@ -614,6 +614,26 @@ class ForbiddenIslandWorld extends World {
     
     // Helicopter
     HelicopterTarget helicopter;
+    
+    // Island Generators
+    AIslandGenerator mountain = new MountainIslandGenerator();
+    AIslandGenerator random = new MountainIslandGenerator();
+    AIslandGenerator terrain = new RandomTerrainIslandGenerator(128);
+    
+    // check if this world has been initialized
+    boolean isInitialized = false;
+
+    // create a new ForbiddenIslandWorld with the given AIslandGenerator
+    ForbiddenIslandWorld() {
+        this.board = this.terrain.generateTerrain();
+        this.waterHeight = 0;
+        this.tick = 0;
+        this.maxHeight = this.terrain.maxHeight;
+        
+        this.createTargets();
+        this.createPlayer();
+        this.createHelicopter();
+    }
 
     // draw the world
     public WorldScene makeScene() {
@@ -691,18 +711,6 @@ class ForbiddenIslandWorld extends World {
     // EFFECT: initializes helicopter
     void createHelicopter() {
         this.helicopter = new HelicopterTarget(this.getRandomDry());
-    }
-
-    // create a new ForbiddenIslandWorld with the given AIslandGenerator
-    ForbiddenIslandWorld(AIslandGenerator gen) {
-        this.board = gen.generateTerrain();
-        this.waterHeight = 0;
-        this.tick = 0;
-        this.maxHeight = gen.maxHeight;
-        
-        this.createTargets();
-        this.createPlayer();
-        this.createHelicopter();
     }
 
     // draw this world
@@ -795,6 +803,17 @@ class ForbiddenIslandWorld extends World {
     boolean isWin() {
         return !this.items.isCons() && this.helicopter.collide(this.player);
     }
+    
+    // reset this world with the given terrain generator
+    void reset(AIslandGenerator gen) {
+        this.board = gen.generateTerrain();
+        this.maxHeight = gen.maxHeight;
+        this.waterHeight = 0;
+        
+        this.createPlayer();
+        this.createHelicopter();
+        this.createTargets();
+    }
 }
 
 class ExamplesIslandGame {
@@ -806,9 +825,9 @@ class ExamplesIslandGame {
     ForbiddenIslandWorld worldTerrain;
 
     void initializeIslands() {
-        this.worldMountain = new ForbiddenIslandWorld(mountainGen);
-        this.worldRandom = new ForbiddenIslandWorld(randomGen);
-        this.worldTerrain = new ForbiddenIslandWorld(randomTerrainGen);
+        this.worldMountain = new ForbiddenIslandWorld();
+        this.worldRandom = new ForbiddenIslandWorld();
+        this.worldTerrain = new ForbiddenIslandWorld();
     }
 
     // test manhattan distance
@@ -936,9 +955,9 @@ class ExamplesPlay {
     ForbiddenIslandWorld worldTerrain;
 
     void initializeIslands() {
-        this.worldMountain = new ForbiddenIslandWorld(mountainGen);
-        this.worldRandom = new ForbiddenIslandWorld(randomGen);
-        this.worldTerrain = new ForbiddenIslandWorld(randomTerrainGen);
+        this.worldMountain = new ForbiddenIslandWorld();
+        this.worldRandom = new ForbiddenIslandWorld();
+        this.worldTerrain = new ForbiddenIslandWorld();
     }
     
     
