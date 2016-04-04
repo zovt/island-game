@@ -639,8 +639,13 @@ class ForbiddenIslandWorld extends World {
     public WorldEnd worldEnds() {
         if (this.isOver()) {
             return new WorldEnd(true, this.makeAFinalScene("You lose"));
+        } 
+        else if(!this.items.isCons() && this.player.link.equals(this.helicopter)) {
+            return new WorldEnd(true, this.makeAFinalScene("You win"));
         }
-        return new WorldEnd(false, this.makeScene());
+        else {
+            return new WorldEnd(false, this.makeAFinalScene("Null"));
+        }
     }
     
     // handle keys
@@ -929,6 +934,6 @@ class ExamplesPlay {
     
     void testGame(Tester t) {
         this.initializeIslands();
-        this.worldTerrain.bigBang(Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), .016);
+        this.worldMountain.bigBang(Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), .016);
     }
 }
