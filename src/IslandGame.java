@@ -7,11 +7,12 @@ import java.awt.Color;
 import javalib.worldimages.*;
 
 // WHISTLES:
-// Made the nudge more interesting for the terrain island which also makes the game more winnable
-// Scoring
+// 1.  Made the nudge more interesting for the terrain island which also makes the game more winnable
+// 2.  Scoring
 
 // BELLS:
-// Colorized the pieces based on their height in relation to the water level so that the player can quickly identify what piece to go after first
+// 1.  Colorized the pieces based on their height in relation to the water level
+//     so that the player can quickly identify what piece to go after first
 
 // utilities
 class Utility {
@@ -88,7 +89,7 @@ class Cell {
         if (this.height - waterHeight > 0) {
             return new RectangleImage(CELLSIZE, CELLSIZE, OutlineMode.SOLID,
                     new Utility().mix(maxNoFlood, minNoFlood,
-                                (this.height - waterHeight) / maxHeight));
+                            (this.height - waterHeight) / maxHeight));
         }
         else {
             return new RectangleImage(CELLSIZE, CELLSIZE, OutlineMode.SOLID,
@@ -528,8 +529,10 @@ class PieceTarget extends Target {
     WorldImage draw(int waterHeight, int maxHeight) {
         Color safest = Color.DARK_GRAY;
         Color unsafest = Color.RED;
-        
-        return new CircleImage(4, OutlineMode.SOLID, new Utility().mix(safest, unsafest, Math.max(0, (this.link.height - waterHeight)/maxHeight)));
+
+        return new CircleImage(4, OutlineMode.SOLID, new Utility().mix(safest,
+                unsafest,
+                Math.max(0, (this.link.height - waterHeight) / maxHeight)));
     }
 }
 
@@ -675,7 +678,7 @@ class ForbiddenIslandWorld extends World {
 
     // Tick counter
     int tick;
-    
+
     // Clock
     Integer score;
 
@@ -740,7 +743,8 @@ class ForbiddenIslandWorld extends World {
     // draw the game scene
     WorldScene makeGameScene() {
         WorldScene scene = this.defaultScene();
-        WorldImage score = new TextImage(this.score.toString(), 30, Color.MAGENTA);
+        WorldImage score = new TextImage(this.score.toString(), 30,
+                Color.MAGENTA);
         scene.placeImageXY(this.drawInGame(),
                 (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5,
                 (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5);
@@ -752,7 +756,8 @@ class ForbiddenIslandWorld extends World {
     WorldScene makeLoseScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You lose", 30, Color.BLACK);
-        WorldImage score = new TextImage("Your score: " + this.score.toString(), 30, Color.BLACK);
+        WorldImage score = new TextImage("Your score: " + this.score.toString(),
+                30, Color.BLACK);
         WorldImage menu = new TextImage(
                 "m - mountain | r - random | t - terrain", 30, Color.BLACK);
         scene.placeImageXY(lose, 300, 200);
@@ -765,7 +770,8 @@ class ForbiddenIslandWorld extends World {
     WorldScene makeWinScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You win", 30, Color.BLACK);
-        WorldImage score = new TextImage("Your score: " + this.score.toString(), 30, Color.BLACK);
+        WorldImage score = new TextImage("Your score: " + this.score.toString(),
+                30, Color.BLACK);
         WorldImage menu = new TextImage(
                 "m - mountain | r - random | t - terrain", 30, Color.BLACK);
         scene.placeImageXY(lose, 300, 200);
@@ -798,7 +804,8 @@ class ForbiddenIslandWorld extends World {
             result = target.drawInto(result, this.waterHeight, this.maxHeight);
         }
 
-        result = this.helicopter.drawInto(result, this.waterHeight, this.maxHeight);
+        result = this.helicopter.drawInto(result, this.waterHeight,
+                this.maxHeight);
         result = this.player.drawInto(result);
 
         return result;
@@ -1141,7 +1148,7 @@ class ExamplesIslandGame {
         t.checkExpect(worldMountain.player.link.x, origx3);
         t.checkExpect(worldMountain.player.link.y, origy3);
     }
-    
+
     // test score
     void testScore(Tester t) {
         this.initializeIslands();
@@ -1265,7 +1272,8 @@ class ExamplesIslandGame {
                         Math.min(Math.sqrt((25 - cell.height) / 128), 1.0f))));
         t.checkExpect(cell.draw(8, 128),
                 new RectangleImage(10, 10, OutlineMode.SOLID,
-                        new Utility().mix(Color.white, new Color(0.0f, 0.5f, 0.0f),
+                        new Utility().mix(Color.white,
+                                new Color(0.0f, 0.5f, 0.0f),
                                 (cell.height - 8) / 128)));
         OceanCell oCell = new OceanCell(10, 10);
         t.checkExpect(oCell.draw(100, 128),
