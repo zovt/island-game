@@ -1121,7 +1121,7 @@ class ExamplesIslandGame {
     // test movement
     void testMovement(Tester t) {
         this.initializeIslands();
-        Cell random = this.worldMountain.getRandomDry();
+        Cell random = this.worldMountain.getRandomDryMaxHeight();
 
         this.worldMountain.player = new Player(random);
         int origx = worldMountain.player.link.x;
