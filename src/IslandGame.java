@@ -375,6 +375,7 @@ class RandomTerrainIslandGenerator extends AIslandGenerator {
         return result;
     }
 
+    // generate terrain using the subdivision algorithm
     public void generateTerrain(ArrayList<ArrayList<Double>> terrain, int tLX,
             int tLY, int tRX, int tRY, int bRX, int bRY, int bLX, int bLY) {
         if (tRX - tLX > 1 && bRX - bLX > 1 && bLY - tLY > 1 && bRY - tRY > 1) {
@@ -442,6 +443,7 @@ class RandomTerrainIslandGenerator extends AIslandGenerator {
         }
     }
 
+    // generate the cells
     public ArrayList<ArrayList<Cell>> generateCells(
             ArrayList<ArrayList<Double>> heights) {
         ArrayList<ArrayList<Cell>> results = new ArrayList<ArrayList<Cell>>();
@@ -472,12 +474,14 @@ abstract class Target {
         this.link = link;
     }
     
+    // draw the target on top of the world
     WorldImage drawInto(WorldImage world) {
         WorldImage empty = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
         WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
         return new OverlayImage(onEmpty, world);    
     }
     
+    // draw the given target
     abstract WorldImage draw();
     
     // check if this target is alive
@@ -504,6 +508,7 @@ class PieceTarget extends Target {
         super(link);
     }
     
+    // draw this piece
     WorldImage draw() {
         return new CircleImage(4, OutlineMode.SOLID, Color.MAGENTA);
     }
@@ -514,6 +519,7 @@ class HelicopterTarget extends Target {
         super(link);
     }
     
+    // draw the helicopter
     WorldImage draw() {
         return new CircleImage(4, OutlineMode.SOLID, Color.ORANGE);
     }    
@@ -526,16 +532,20 @@ class Player {
         this.link = link;
     }
     
+    // draw the player
     WorldImage draw() {
         return new RectangleImage(8, 8, OutlineMode.SOLID, Color.BLACK);
     }
     
+    // draw the player on top of the given image
     WorldImage drawInto(WorldImage world) {
         WorldImage empty = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
         WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
         return new OverlayImage(onEmpty, world);
     }
     
+    // handle movement based on the given key
+    // EFFECT: modifies the cell link based on the key
     void handleKey(String key) {
         switch(key) {
         case "up":
@@ -602,29 +612,39 @@ class Player {
     }
 }
 
+// the world state
 interface IWorldState {
+    // check if given string matches this state
     boolean check(String s);
 }
 
+// in menu
 class Menu implements IWorldState {
+    // check if the given string matches "menu"
     public boolean check(String s) {
         return s.equals("menu");
     }
 }
 
+// in game
 class InGame implements IWorldState {
+    // check if the given string matches "ingame"
     public boolean check(String s) {
         return s.equals("ingame");
     }
 }
 
+// lost the game
 class Lose implements IWorldState {
+    // check if the given string matches "lose"
     public boolean check(String s) {
         return s.equals("lose");
     }
 }
 
+// won the game
 class Win implements IWorldState {
+    // check if the given string matches "win"
     public boolean check(String s) {
         return s.equals("win");
     }
@@ -666,7 +686,7 @@ class ForbiddenIslandWorld extends World {
         this.reset(gen);
     }
 
-    // draw the world
+    // draw the scene based on state
     public WorldScene makeScene() {
         if (this.state.check("menu")) {
             return this.makeMenuScene();
@@ -683,12 +703,14 @@ class ForbiddenIslandWorld extends World {
         return defaultScene();
     }
     
+    // the default scene
     WorldScene defaultScene() {
         return new WorldScene(
                 (AIslandGenerator.ISLAND_SIZE + 1) * 10,
                 (AIslandGenerator.ISLAND_SIZE + 1) * 10);
     }
     
+    // draw the menu scene
     WorldScene makeMenuScene() {
         WorldScene res = this.defaultScene();
         WorldImage text = new TextImage("m - mountain | r - random | t - terrain", 30, Color.BLACK);
@@ -696,6 +718,7 @@ class ForbiddenIslandWorld extends World {
         return res;
     }
     
+    // draw the game scene
     WorldScene makeGameScene() {
         WorldScene scene = this.defaultScene();
         scene.placeImageXY(this.drawInGame(),
@@ -704,6 +727,7 @@ class ForbiddenIslandWorld extends World {
         return scene;
     }
     
+    // draw the lose scene
     WorldScene makeLoseScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You lose", 30, Color.BLACK);
@@ -713,6 +737,7 @@ class ForbiddenIslandWorld extends World {
         return scene;
     }
     
+    // draw the win scene
     WorldScene makeWinScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You win", 30, Color.BLACK);
@@ -753,6 +778,7 @@ class ForbiddenIslandWorld extends World {
     }
 
     // handle ticking
+    // EFFECT: if in game, update the tick counter, increase the water height, check collisions, and update the state
     public void onTick() {
         if (this.state.check("ingame")) {
             this.tick = (this.tick + 1) % 10;
@@ -769,6 +795,8 @@ class ForbiddenIslandWorld extends World {
         }
     }
     
+    // update the game state
+    // EFFECT: modifies the game state based on win and lose conditions
     public void updateState() {
         if (this.isOver()) {
             this.state = new Lose();
@@ -778,6 +806,8 @@ class ForbiddenIslandWorld extends World {
     }
     
     // handle keys
+    // EFFECT: if in game, allow player to handle input, and run onTick(). Otherwise,
+    // handle resetting the game
     public void onKeyEvent(String key) {
         if (this.state.check("ingame")) {
             this.player.handleKey(key);
@@ -788,6 +818,7 @@ class ForbiddenIslandWorld extends World {
     }
     
     // handle resetting based on key
+    // EFFECT: resets the game
     void handleReset(String key) {
         switch(key) {
         case "m":
@@ -861,6 +892,7 @@ class ForbiddenIslandWorld extends World {
     }
     
     // update the targets to remove the ones that the player has landed on
+    // EFFECT: modifies the targets by removing the one that player is currently touching
     void checkCollisions() {
         IList<Target> res = new Empty<Target>();
         for(Target t : this.items) {
@@ -887,6 +919,8 @@ class ForbiddenIslandWorld extends World {
     }
     
     // reset this world with the given terrain generator
+    // EFFECT: initialize the board, height, water height, player, helicopter, and targets
+    // and set the game state to InGame
     void reset(AIslandGenerator gen) {
         this.board = gen.generateTerrain();
         this.maxHeight = gen.maxHeight;
@@ -916,6 +950,7 @@ class ExamplesIslandGame {
     IWorldState win = new Win();
     IWorldState lose = new Lose();
     IWorldState menu = new Menu();
+    IWorldState ingame = new InGame();
 
     void initializeIslands() {
         this.worldMountain = new ForbiddenIslandWorld(mountainGen);
@@ -1200,22 +1235,10 @@ class ExamplesIslandGame {
 }
 
 class ExamplesPlay {
-    AIslandGenerator mountainGen = new MountainIslandGenerator(128);
-    AIslandGenerator randomGen = new RandomIslandGenerator(128);
-    AIslandGenerator randomTerrainGen = new RandomTerrainIslandGenerator(128);
-    ForbiddenIslandWorld worldMountain;
-    ForbiddenIslandWorld worldRandom;
-    ForbiddenIslandWorld worldTerrain;
-
-    void initializeIslands() {
-        this.worldMountain = new ForbiddenIslandWorld();
-        this.worldRandom = new ForbiddenIslandWorld();
-        this.worldTerrain = new ForbiddenIslandWorld();
-    }
+    ForbiddenIslandWorld world = new ForbiddenIslandWorld();
     
-    
+    // play the game
     void testGame(Tester t) {
-        this.initializeIslands();
-        this.worldTerrain.bigBang(Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), .016);
+        this.world.bigBang(Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), .016);
     }
 }
