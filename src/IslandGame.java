@@ -547,25 +547,17 @@ class Player {
     // handle movement based on the given key
     // EFFECT: modifies the cell link based on the key
     void handleKey(String key) {
-        switch(key) {
-        case "up":
+        if (key.equals("up")) {
             this.moveUp();
-            break;
-            
-        case "down":
+        }
+        else if (key.equals("down")) {
             this.moveDown();
-            break;
-            
-        case "right":
+        }
+        else if (key.equals("right")) {
             this.moveRight();
-            break;
-            
-        case "left":
+        }
+        else if (key.equals("left")) {
             this.moveLeft();
-            break;
-            
-        default:
-            break;
         }
     }
     
@@ -820,18 +812,14 @@ class ForbiddenIslandWorld extends World {
     // handle resetting based on key
     // EFFECT: resets the game
     void handleReset(String key) {
-        switch(key) {
-        case "m":
+        if (key.equals("m")) {
             this.reset(this.mountain);
-            break;
-            
-        case "r":
+        } 
+        else if (key.equals("r")) {
             this.reset(this.random);
-            break;
-
-        case "t":
+        }
+        else if (key.equals("t")) {
             this.reset(this.terrain);
-            break;
         }
     }
     
