@@ -1091,111 +1091,111 @@ class ExamplesIslandGame {
         t.checkExpect(mountainGen.manhattanDistance(50, 60, 30, 30), 50.0);
     }
 
-//    // test height generation
-//    void testGenerateHeight(Tester t) {
-//        this.initializeIslands();
-//        t.checkExpect(mountainGen.generateHeights().get(61).get(43), -8.0);
-//        t.checkExpect(mountainGen.generateHeights().get(18).get(54), -4.0);
-//        t.checkExpect(mountainGen.generateHeights().get(46).get(26), 12.0);
-//        t.checkExpect(mountainGen.generateHeights().get(36).get(7), 3.0);
-//        t.checkExpect(mountainGen.generateHeights().get(41).get(55), 0.0);
-//        t.checkExpect(
-//                mountainGen.generateCells(this.mountainGen.generateHeights())
-//                        .get(5).get(13).height,
-//                0.0);
-//        t.checkExpect(
-//                mountainGen.generateCells(this.mountainGen.generateHeights())
-//                        .get(8).get(58).height,
-//                0.0);
-//        t.checkExpect(
-//                mountainGen.generateCells(this.mountainGen.generateHeights())
-//                        .get(1).get(33).height,
-//                0.0);
-//        t.checkExpect(
-//                mountainGen.generateCells(this.mountainGen.generateHeights())
-//                        .get(36).get(10).height,
-//                6.0);
-//        t.checkExpect(
-//                mountainGen.generateCells(this.mountainGen.generateHeights())
-//                        .get(56).get(10).height,
-//                0.0);
-//
-//        t.checkExpect(randomGen.generateHeights().get(54).get(45) >= 0, true);
-//        t.checkExpect(randomGen.generateHeights().get(2).get(44) >= 0, true);
-//        t.checkExpect(randomGen.generateHeights().get(48).get(39) >= 0, true);
-//        t.checkExpect(randomGen.generateHeights().get(22).get(64) >= 0, true);
-//        t.checkExpect(randomGen.generateCells(randomGen.generateHeights())
-//                .get(36).get(25).height > 0, true);
-//        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-//                .get(51).get(51).height > 0, false);
-//        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-//                .get(58).get(9).height > 0, false);
-//        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-//                .get(2).get(57).height > 0, false);
-//        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-//                .get(24).get(54).height > 0, true);
-//        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-//                .get(26).get(43).height > 0, true);
-//        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-//                .get(41).get(23).height > 0, true);
-//    }
-//
-//    // test flooding
-//    void testFlood(Tester t) {
-//        this.initializeIslands();
-//        // test flooding on mountain terrain
-//        
-//        //                                    y  *  x
-//        worldMountain.flood(9);
-//        t.checkExpect(worldMountain.board.get(12 * 29).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(37 * 12).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(23 * 39).isFlooded, true);
-//        
-//        worldMountain.flood(11);
-//        t.checkExpect(worldMountain.board.get(58 * 51).isFlooded, false);
-//        t.checkExpect(worldMountain.board.get(24 * 6).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(53 * 2).isFlooded, true);
-//        
-//        worldMountain.flood(16);
-//        t.checkExpect(worldMountain.board.get(49 * 38).isFlooded, false);
-//        t.checkExpect(worldMountain.board.get(27 * 31).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(50 * 3).isFlooded, true);
-//
-//        worldMountain.flood(31);
-//        t.checkExpect(worldMountain.board.get(14 * 55).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(49 * 2).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(63 * 33).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(3 * 34).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(42 * 57).isFlooded, true);
-//        t.checkExpect(worldMountain.board.get(36 * 29).isFlooded, true);
-//        
-//        worldMountain.flood(0);
-//    }
-//
-//    // test drawing cells
-//    void testCellDraws(Tester t) {
-//        Cell cell = new Cell(10, 10, 10);
-//        cell.isFlooded = true;
-//        t.checkExpect(cell.draw(20, 64),
-//                new RectangleImage(10, 10, OutlineMode.SOLID,
-//                        cell.mix(
-//                                new Color(0.0f, 0.0f, 1.0f), new Color(0.0f,
-//                                        0.35f, 0.5f),
-//                        Math.min(Math.sqrt((20 - cell.height) / 64), 1.0f))));
-//        cell.isFlooded = false;
-//        t.checkExpect(cell.draw(25, 128),
-//                new RectangleImage(10, 10, OutlineMode.SOLID,
-//                        cell.mix(Color.red, new Color(0.25f, 0.5f,
-//                                0.0f),
-//                        Math.min(Math.sqrt((25 - cell.height) / 128), 1.0f))));
-//        t.checkExpect(cell.draw(8, 128),
-//                new RectangleImage(10, 10, OutlineMode.SOLID,
-//                        cell.mix(Color.white, new Color(0.0f, 0.5f, 0.0f),
-//                                (cell.height - 8) / 128)));
-//        OceanCell oCell = new OceanCell(10, 10);
-//        t.checkExpect(oCell.draw(100, 128),
-//                new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE));
-//    }
+   //  test height generation
+    void testGenerateHeight(Tester t) {
+        this.initializeIslands();
+        t.checkExpect(mountainGen.generateHeights().get(61).get(43), 88.0);
+        t.checkExpect(mountainGen.generateHeights().get(18).get(54), 92.0);
+        t.checkExpect(mountainGen.generateHeights().get(46).get(26), 108.0);
+        t.checkExpect(mountainGen.generateHeights().get(36).get(7), 99.0);
+        t.checkExpect(mountainGen.generateHeights().get(41).get(55), 96.0);
+        t.checkExpect(
+                mountainGen.generateCells(this.mountainGen.generateHeights())
+                        .get(5).get(13).height,
+                0.0);
+        t.checkExpect(
+                mountainGen.generateCells(this.mountainGen.generateHeights())
+                        .get(8).get(58).height,
+                0.0);
+        t.checkExpect(
+                mountainGen.generateCells(this.mountainGen.generateHeights())
+                        .get(1).get(33).height,
+                0.0);
+        t.checkExpect(
+                mountainGen.generateCells(this.mountainGen.generateHeights())
+                        .get(36).get(10).height,
+                102.0);
+        t.checkExpect(
+                mountainGen.generateCells(this.mountainGen.generateHeights())
+                        .get(56).get(10).height,
+                0.0);
+
+        t.checkExpect(randomGen.generateHeights().get(54).get(45) >= 0, true);
+        t.checkExpect(randomGen.generateHeights().get(2).get(44) >= 0, true);
+        t.checkExpect(randomGen.generateHeights().get(48).get(39) >= 0, true);
+        t.checkExpect(randomGen.generateHeights().get(22).get(64) >= 0, true);
+        t.checkExpect(randomGen.generateCells(randomGen.generateHeights())
+                .get(36).get(25).height > 0, true);
+        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
+                .get(51).get(51).height > 0, false);
+        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
+                .get(58).get(9).height > 0, false);
+        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
+                .get(2).get(57).height > 0, false);
+        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
+                .get(24).get(54).height > 0, true);
+        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
+                .get(26).get(43).height > 0, true);
+        t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
+                .get(41).get(23).height > 0, true);
+    }
+
+    // test flooding
+    void testFlood(Tester t) {
+        this.initializeIslands();
+        // test flooding on mountain terrain
+        
+        //                                    y  *  x
+        worldMountain.flood(9);
+        t.checkExpect(worldMountain.board.get(12 * 29).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(37 * 12).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(23 * 39).isFlooded, true);
+        
+        worldMountain.flood(11);
+        t.checkExpect(worldMountain.board.get(58 * 51).isFlooded, false);
+        t.checkExpect(worldMountain.board.get(24 * 6).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(53 * 2).isFlooded, true);
+        
+        worldMountain.flood(16);
+        t.checkExpect(worldMountain.board.get(49 * 38).isFlooded, false);
+        t.checkExpect(worldMountain.board.get(27 * 31).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(50 * 3).isFlooded, true);
+
+        worldMountain.flood(31);
+        t.checkExpect(worldMountain.board.get(14 * 55).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(49 * 2).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(63 * 33).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(3 * 34).isFlooded, true);
+        t.checkExpect(worldMountain.board.get(42 * 57).isFlooded, false);
+        t.checkExpect(worldMountain.board.get(36 * 29).isFlooded, true);
+        
+        worldMountain.flood(0);
+    }
+
+    // test drawing cells
+    void testCellDraws(Tester t) {
+        Cell cell = new Cell(10, 10, 10);
+        cell.isFlooded = true;
+        t.checkExpect(cell.draw(20, 64),
+                new RectangleImage(10, 10, OutlineMode.SOLID,
+                        cell.mix(
+                                new Color(0.0f, 0.0f, 1.0f), new Color(0.0f,
+                                        0.35f, 0.5f),
+                        Math.min(Math.sqrt((20 - cell.height) / 64), 1.0f))));
+        cell.isFlooded = false;
+        t.checkExpect(cell.draw(25, 128),
+                new RectangleImage(10, 10, OutlineMode.SOLID,
+                        cell.mix(Color.red, new Color(0.25f, 0.5f,
+                                0.0f),
+                        Math.min(Math.sqrt((25 - cell.height) / 128), 1.0f))));
+        t.checkExpect(cell.draw(8, 128),
+                new RectangleImage(10, 10, OutlineMode.SOLID,
+                        cell.mix(Color.white, new Color(0.0f, 0.5f, 0.0f),
+                                (cell.height - 8) / 128)));
+        OceanCell oCell = new OceanCell(10, 10);
+        t.checkExpect(oCell.draw(100, 128),
+                new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE));
+    }
     
 }
 
