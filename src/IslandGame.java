@@ -662,6 +662,9 @@ class ForbiddenIslandWorld extends World {
 
     // Tick counter
     int tick;
+    
+    // Clock
+    Integer score;
 
     // Player
     Player player;
@@ -724,9 +727,11 @@ class ForbiddenIslandWorld extends World {
     // draw the game scene
     WorldScene makeGameScene() {
         WorldScene scene = this.defaultScene();
+        WorldImage score = new TextImage(this.score.toString(), 30, Color.MAGENTA);
         scene.placeImageXY(this.drawInGame(),
                 (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5,
                 (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5);
+        scene.placeImageXY(score, 500, 30);
         return scene;
     }
 
@@ -734,9 +739,11 @@ class ForbiddenIslandWorld extends World {
     WorldScene makeLoseScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You lose", 30, Color.BLACK);
+        WorldImage score = new TextImage("Your score: " + this.score.toString(), 30, Color.BLACK);
         WorldImage menu = new TextImage(
                 "m - mountain | r - random | t - terrain", 30, Color.BLACK);
-        scene.placeImageXY(lose, 300, 300);
+        scene.placeImageXY(lose, 300, 200);
+        scene.placeImageXY(score, 300, 300);
         scene.placeImageXY(menu, 300, 400);
         return scene;
     }
@@ -745,9 +752,11 @@ class ForbiddenIslandWorld extends World {
     WorldScene makeWinScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You win", 30, Color.BLACK);
+        WorldImage score = new TextImage("Your score: " + this.score.toString(), 30, Color.BLACK);
         WorldImage menu = new TextImage(
                 "m - mountain | r - random | t - terrain", 30, Color.BLACK);
-        scene.placeImageXY(lose, 300, 300);
+        scene.placeImageXY(lose, 300, 200);
+        scene.placeImageXY(score, 300, 300);
         scene.placeImageXY(menu, 300, 400);
         return scene;
     }
@@ -819,6 +828,7 @@ class ForbiddenIslandWorld extends World {
     public void onKeyEvent(String key) {
         if (this.state.check("ingame")) {
             this.player.handleKey(key);
+            this.score += 1;
             this.onTick();
         }
         else {
@@ -929,12 +939,12 @@ class ForbiddenIslandWorld extends World {
 
     // reset this world with the given terrain generator
     // EFFECT: initialize the board, height, water height, player, helicopter,
-    // and targets
-    // and set the game state to InGame
+    // score, and targets and set the game state to InGame
     void reset(AIslandGenerator gen) {
         this.board = gen.generateTerrain();
         this.maxHeight = gen.maxHeight;
         this.waterHeight = 0;
+        this.score = 0;
 
         this.createPlayer();
         this.createHelicopter();
@@ -1117,6 +1127,19 @@ class ExamplesIslandGame {
         worldMountain.onKeyEvent("right");
         t.checkExpect(worldMountain.player.link.x, origx3);
         t.checkExpect(worldMountain.player.link.y, origy3);
+    }
+    
+    // test score
+    void testScore(Tester t) {
+        this.initializeIslands();
+        t.checkExpect(this.worldMountain.score, 0);
+        this.worldMountain.onKeyEvent("up");
+        this.worldMountain.onKeyEvent("down");
+        this.worldMountain.onKeyEvent("left");
+        t.checkExpect(this.worldMountain.score, 3);
+        this.worldMountain.onKeyEvent("right");
+        this.worldMountain.onKeyEvent("down");
+        t.checkExpect(this.worldMountain.score, 5);
     }
 
     // test manhattan distance
