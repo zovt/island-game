@@ -10,7 +10,7 @@ import javalib.worldimages.*;
 class Cell {
     // represents the size of a cell for drawing
     static final int CELLSIZE = 10;
-    
+
     // represents absolute height of this cell, in feet
     double height;
     // In logical coordinates, with the origin at the top-left corner of the
@@ -122,7 +122,8 @@ class OceanCell extends Cell {
 
     // draw this OceanCell based on water height and max height
     public WorldImage draw(int waterHeight, int maxHeight) {
-        return new RectangleImage(CELLSIZE, CELLSIZE, OutlineMode.SOLID, Color.BLUE);
+        return new RectangleImage(CELLSIZE, CELLSIZE, OutlineMode.SOLID,
+                Color.BLUE);
     }
 
     // flood this oceanCell
@@ -170,10 +171,10 @@ abstract class AIslandGenerator {
 
                 left = cells.get(cur.y).get(Math.max(cur.x - 1, 0));
                 top = cells.get(Math.max(cur.y - 1, 0)).get(cur.x);
-                right = cells.get(cur.y).get(
-                        Math.min(cur.x + 1, AIslandGenerator.ISLAND_SIZE));
-                bottom = cells.get(
-                        Math.min(cur.y + 1, AIslandGenerator.ISLAND_SIZE))
+                right = cells.get(cur.y)
+                        .get(Math.min(cur.x + 1, AIslandGenerator.ISLAND_SIZE));
+                bottom = cells
+                        .get(Math.min(cur.y + 1, AIslandGenerator.ISLAND_SIZE))
                         .get(cur.x);
 
                 cur.setNeighbors(left, top, right, bottom);
@@ -281,8 +282,8 @@ class MountainIslandGenerator extends DiamondIslandGenerator {
 
         return heights;
     }
-    
-    MountainIslandGenerator (int maxHeight) {
+
+    MountainIslandGenerator(int maxHeight) {
         super(maxHeight);
     }
 }
@@ -318,7 +319,7 @@ class RandomIslandGenerator extends DiamondIslandGenerator {
     RandomIslandGenerator() {
         this.maxHeight = 64;
     }
-    
+
     RandomIslandGenerator(int maxHeight) {
         super(maxHeight);
     }
@@ -469,34 +470,39 @@ class RandomTerrainIslandGenerator extends AIslandGenerator {
 
 abstract class Target {
     Cell link;
-    
+
     Target(Cell link) {
         this.link = link;
     }
-    
+
     // draw the target on top of the world
     WorldImage drawInto(WorldImage world) {
-        WorldImage empty = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
-        WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
-        return new OverlayImage(onEmpty, world);    
+        WorldImage empty = new PhantomImage(new EmptyImage(),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1));
+        WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT,
+                AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE,
+                this.link.y * Cell.CELLSIZE, this.draw());
+        return new OverlayImage(onEmpty, world);
     }
-    
+
     // draw the given target
     abstract WorldImage draw();
-    
+
     // check if this target is alive
     boolean isAlive() {
         return !this.link.isFlooded;
     }
-    
-    // check if a player is on this target. If he isn't, add this item to the given list
+
+    // check if a player is on this target. If he isn't, add this item to the
+    // given list
     IList<Target> pickup(Player player, IList<Target> current) {
         if (player.link != this.link) {
             current = new Cons<Target>(this, current);
         }
         return current;
     }
-    
+
     // check if the player is colliding with this target
     boolean collide(Player player) {
         return player.link == this.link;
@@ -507,7 +513,7 @@ class PieceTarget extends Target {
     PieceTarget(Cell link) {
         super(link);
     }
-    
+
     // draw this piece
     WorldImage draw() {
         return new CircleImage(4, OutlineMode.SOLID, Color.MAGENTA);
@@ -518,32 +524,36 @@ class HelicopterTarget extends Target {
     HelicopterTarget(Cell link) {
         super(link);
     }
-    
+
     // draw the helicopter
     WorldImage draw() {
         return new CircleImage(4, OutlineMode.SOLID, Color.ORANGE);
-    }    
+    }
 }
 
 class Player {
     Cell link;
-    
+
     Player(Cell link) {
         this.link = link;
     }
-    
+
     // draw the player
     WorldImage draw() {
         return new RectangleImage(8, 8, OutlineMode.SOLID, Color.BLACK);
     }
-    
+
     // draw the player on top of the given image
     WorldImage drawInto(WorldImage world) {
-        WorldImage empty = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
-        WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE, this.link.y * Cell.CELLSIZE, this.draw());
+        WorldImage empty = new PhantomImage(new EmptyImage(),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1));
+        WorldImage onEmpty = new OverlayOffsetAlign(AlignModeX.LEFT,
+                AlignModeY.TOP, empty, this.link.x * Cell.CELLSIZE,
+                this.link.y * Cell.CELLSIZE, this.draw());
         return new OverlayImage(onEmpty, world);
     }
-    
+
     // handle movement based on the given key
     // EFFECT: modifies the cell link based on the key
     void handleKey(String key) {
@@ -560,12 +570,12 @@ class Player {
             this.moveLeft();
         }
     }
-    
+
     // check if the move is legal
     boolean isLegalMove(Cell next) {
         return !next.isFlooded;
     }
-    
+
     // Move player up
     // EFFECT: modifies link
     void moveUp() {
@@ -573,7 +583,7 @@ class Player {
             this.link = this.link.top;
         }
     }
-    
+
     // Move player down
     // EFFECT: modifies link
     void moveDown() {
@@ -581,7 +591,7 @@ class Player {
             this.link = this.link.bottom;
         }
     }
-    
+
     // Move player left
     // EFFECT: modifies link
     void moveLeft() {
@@ -589,7 +599,7 @@ class Player {
             this.link = this.link.left;
         }
     }
-    
+
     // Move player right
     // EFFECT: modifies link
     void moveRight() {
@@ -597,7 +607,7 @@ class Player {
             this.link = this.link.right;
         }
     }
-    
+
     // check if the player is alive
     boolean isAlive() {
         return !this.link.isFlooded;
@@ -652,27 +662,28 @@ class ForbiddenIslandWorld extends World {
 
     // Tick counter
     int tick;
-    
+
     // Player
     Player player;
-    
+
     // Items
     IList<Target> items;
-    
+
     // Helicopter
     HelicopterTarget helicopter;
-    
+
     // Island Generators
     AIslandGenerator mountain = new MountainIslandGenerator(64);
     AIslandGenerator random = new RandomIslandGenerator(64);
     AIslandGenerator terrain = new RandomTerrainIslandGenerator(128);
-    
+
     // World State
     IWorldState state = new Menu();
-    
+
     // creates a default IslandWorld
-    ForbiddenIslandWorld() {}
-    
+    ForbiddenIslandWorld() {
+    }
+
     // creates an IslandWorld using the given generator
     ForbiddenIslandWorld(AIslandGenerator gen) {
         this.reset(gen);
@@ -694,22 +705,22 @@ class ForbiddenIslandWorld extends World {
         }
         return defaultScene();
     }
-    
+
     // the default scene
     WorldScene defaultScene() {
-        return new WorldScene(
-                (AIslandGenerator.ISLAND_SIZE + 1) * 10,
+        return new WorldScene((AIslandGenerator.ISLAND_SIZE + 1) * 10,
                 (AIslandGenerator.ISLAND_SIZE + 1) * 10);
     }
-    
+
     // draw the menu scene
     WorldScene makeMenuScene() {
         WorldScene res = this.defaultScene();
-        WorldImage text = new TextImage("m - mountain | r - random | t - terrain", 30, Color.BLACK);
+        WorldImage text = new TextImage(
+                "m - mountain | r - random | t - terrain", 30, Color.BLACK);
         res.placeImageXY(text, 300, 300);
         return res;
     }
-    
+
     // draw the game scene
     WorldScene makeGameScene() {
         WorldScene scene = this.defaultScene();
@@ -718,27 +729,29 @@ class ForbiddenIslandWorld extends World {
                 (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5);
         return scene;
     }
-    
+
     // draw the lose scene
     WorldScene makeLoseScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You lose", 30, Color.BLACK);
-        WorldImage menu = new TextImage("m - mountain | r - random | t - terrain", 30, Color.BLACK);
+        WorldImage menu = new TextImage(
+                "m - mountain | r - random | t - terrain", 30, Color.BLACK);
         scene.placeImageXY(lose, 300, 300);
         scene.placeImageXY(menu, 300, 400);
         return scene;
     }
-    
+
     // draw the win scene
     WorldScene makeWinScene() {
         WorldScene scene = this.defaultScene();
         WorldImage lose = new TextImage("You win", 30, Color.BLACK);
-        WorldImage menu = new TextImage("m - mountain | r - random | t - terrain", 30, Color.BLACK);
+        WorldImage menu = new TextImage(
+                "m - mountain | r - random | t - terrain", 30, Color.BLACK);
         scene.placeImageXY(lose, 300, 300);
         scene.placeImageXY(menu, 300, 400);
         return scene;
     }
-    
+
     // draw the in-game screen
     WorldImage drawInGame() {
         WorldImage result = new EmptyImage();
@@ -758,19 +771,20 @@ class ForbiddenIslandWorld extends World {
         for (WorldImage image : rows) {
             result = new AboveImage(result, image);
         }
-        
+
         for (Target target : this.items) {
             result = target.drawInto(result);
         }
-        
+
         result = this.helicopter.drawInto(result);
         result = this.player.drawInto(result);
-        
+
         return result;
     }
 
     // handle ticking
-    // EFFECT: if in game, update the tick counter, increase the water height, check collisions, and update the state
+    // EFFECT: if in game, update the tick counter, increase the water height,
+    // check collisions, and update the state
     public void onTick() {
         if (this.state.check("ingame")) {
             this.tick = (this.tick + 1) % 10;
@@ -778,43 +792,46 @@ class ForbiddenIslandWorld extends World {
                 this.waterHeight += 1;
                 this.flood();
             }
-            
+
             // check collisions with targets
             this.checkCollisions();
-        
+
             // check game state
             this.updateState();
         }
     }
-    
+
     // update the game state
     // EFFECT: modifies the game state based on win and lose conditions
     public void updateState() {
         if (this.isOver()) {
             this.state = new Lose();
-        } else if (this.isWin()) {
+        }
+        else if (this.isWin()) {
             this.state = new Win();
         }
     }
-    
+
     // handle keys
-    // EFFECT: if in game, allow player to handle input, and run onTick(). Otherwise,
+    // EFFECT: if in game, allow player to handle input, and run onTick().
+    // Otherwise,
     // handle resetting the game
     public void onKeyEvent(String key) {
         if (this.state.check("ingame")) {
             this.player.handleKey(key);
             this.onTick();
-        } else {
+        }
+        else {
             this.handleReset(key);
         }
     }
-    
+
     // handle resetting based on key
     // EFFECT: resets the game
     void handleReset(String key) {
         if (key.equals("m")) {
             this.reset(this.mountain);
-        } 
+        }
         else if (key.equals("r")) {
             this.reset(this.random);
         }
@@ -822,35 +839,38 @@ class ForbiddenIslandWorld extends World {
             this.reset(this.terrain);
         }
     }
-    
+
     // get a random non-flooded cell from the list of cells
     Cell getRandomDry() {
-        int rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
-        
+        int rand = (int) (Math.random() * (AIslandGenerator.ISLAND_SIZE + 1)
+                * (AIslandGenerator.ISLAND_SIZE + 1));
+
         while (this.board.get(rand).isFlooded) {
-            rand = (int)(Math.random() * (AIslandGenerator.ISLAND_SIZE + 1) * (AIslandGenerator.ISLAND_SIZE + 1));
+            rand = (int) (Math.random() * (AIslandGenerator.ISLAND_SIZE + 1)
+                    * (AIslandGenerator.ISLAND_SIZE + 1));
         }
-        
+
         return this.board.get(rand);
     }
-    
+
     // place items in the world
     // EFFECT: initializes the targets
     void createTargets() {
         IList<Target> targets = new Empty<Target>();
-        
-        for(int i = 0; i < 5; i++) {
-            targets = new Cons<Target>(new PieceTarget(this.getRandomDry()), targets);
+
+        for (int i = 0; i < 5; i++) {
+            targets = new Cons<Target>(new PieceTarget(this.getRandomDry()),
+                    targets);
         }
         this.items = targets;
     }
-    
+
     // place player in the world
     // EFFECT: initializes the player
     void createPlayer() {
         this.player = new Player(this.getRandomDry());
     }
-    
+
     // place helicopter
     // EFFECT: initializes helicopter
     void createHelicopter() {
@@ -878,46 +898,48 @@ class ForbiddenIslandWorld extends World {
             }
         }
     }
-    
+
     // update the targets to remove the ones that the player has landed on
-    // EFFECT: modifies the targets by removing the one that player is currently touching
+    // EFFECT: modifies the targets by removing the one that player is currently
+    // touching
     void checkCollisions() {
         IList<Target> res = new Empty<Target>();
-        for(Target t : this.items) {
+        for (Target t : this.items) {
             res = t.pickup(this.player, res);
         }
-        
+
         this.items = res;
     }
-    
+
     // check if we have lost
     boolean isOver() {
         boolean res = true;
         for (Target t : this.items) {
             res = res && t.isAlive();
         }
-        
+
         res = res && this.player.isAlive() && this.helicopter.isAlive();
         return !res;
     }
-    
+
     // check if we win
     boolean isWin() {
         return !this.items.isCons() && this.helicopter.collide(this.player);
     }
-    
+
     // reset this world with the given terrain generator
-    // EFFECT: initialize the board, height, water height, player, helicopter, and targets
+    // EFFECT: initialize the board, height, water height, player, helicopter,
+    // and targets
     // and set the game state to InGame
     void reset(AIslandGenerator gen) {
         this.board = gen.generateTerrain();
         this.maxHeight = gen.maxHeight;
         this.waterHeight = 0;
-        
+
         this.createPlayer();
         this.createHelicopter();
         this.createTargets();
-        
+
         this.state = new InGame();
     }
 }
@@ -945,16 +967,18 @@ class ExamplesIslandGame {
         this.worldRandom = new ForbiddenIslandWorld(randomGen);
         this.worldTerrain = new ForbiddenIslandWorld(randomTerrainGen);
     }
-    
+
     // test checking collisions
     void testCheckCollisions(Tester t) {
         this.initializeIslands();
-        worldMountain.items = new Cons<Target>(new PieceTarget(worldMountain.player.link), worldMountain.items);
+        worldMountain.items = new Cons<Target>(
+                new PieceTarget(worldMountain.player.link),
+                worldMountain.items);
         int orig = worldMountain.items.size();
         worldMountain.checkCollisions();
         t.checkExpect(worldMountain.items.size(), orig - 1);
     }
-    
+
     // test island creation
     void testCreation(Tester t) {
         this.initializeIslands();
@@ -967,7 +991,7 @@ class ExamplesIslandGame {
         }
         this.worldMountain.createHelicopter();
         t.checkExpect(worldMountain.helicopter.link.isFlooded, false);
-        
+
         this.worldRandom.createPlayer();
         t.checkExpect(worldRandom.player.link.isFlooded, false);
         this.worldRandom.createTargets();
@@ -977,7 +1001,7 @@ class ExamplesIslandGame {
         }
         this.worldRandom.createHelicopter();
         t.checkExpect(worldRandom.helicopter.link.isFlooded, false);
-        
+
         this.worldTerrain.createPlayer();
         t.checkExpect(worldTerrain.player.link.isFlooded, false);
         this.worldTerrain.createTargets();
@@ -988,7 +1012,7 @@ class ExamplesIslandGame {
         this.worldTerrain.createHelicopter();
         t.checkExpect(worldTerrain.helicopter.link.isFlooded, false);
     }
-    
+
     // test dry functions
     void testDry(Tester t) {
         this.initializeIslands();
@@ -1004,7 +1028,7 @@ class ExamplesIslandGame {
         t.checkExpect(worldMountain.getRandomDry().isFlooded, false);
         t.checkExpect(worldMountain.getRandomDry().isFlooded, false);
     }
-    
+
     // test win and lose conditions
     void testEnd(Tester t) {
         this.initializeIslands();
@@ -1013,96 +1037,86 @@ class ExamplesIslandGame {
         worldMountain.onTick();
         t.checkExpect(worldMountain.state.check("win"), true);
         t.checkExpect(worldMountain.isWin(), true);
-        
+
         worldTerrain.items = new Empty<Target>();
         worldTerrain.player.link = worldTerrain.helicopter.link;
         worldTerrain.onTick();
         t.checkExpect(worldTerrain.state.check("win"), true);
         t.checkExpect(worldTerrain.isWin(), true);
-        
+
         worldRandom.items = new Empty<Target>();
         worldRandom.player.link = worldRandom.helicopter.link;
         worldRandom.onTick();
         t.checkExpect(worldRandom.state.check("win"), true);
         t.checkExpect(worldRandom.isWin(), true);
-        
+
         this.initializeIslands();
         worldRandom.items.asCons().item.link.isFlooded = true;
         worldRandom.onTick();
         t.checkExpect(worldRandom.state.check("lose"), true);
         t.checkExpect(worldRandom.isOver(), true);
-        
+
         worldTerrain.items.asCons().item.link.isFlooded = true;
         worldTerrain.onTick();
         t.checkExpect(worldTerrain.state.check("lose"), true);
         t.checkExpect(worldTerrain.isOver(), true);
-        
+
         worldMountain.items.asCons().item.link.isFlooded = true;
         worldMountain.onTick();
         t.checkExpect(worldMountain.state.check("lose"), true);
         t.checkExpect(worldMountain.isOver(), true);
     }
-    
+
     // test movement
     void testMovement(Tester t) {
         this.initializeIslands();
+        Cell random = this.worldMountain.getRandomDry();
+
+        this.worldMountain.player = new Player(random);
         int origx = worldMountain.player.link.x;
         int origy = worldMountain.player.link.y;
         worldMountain.onKeyEvent("up");
-        worldMountain.onTick();
         t.checkExpect(worldMountain.player.link.x, origx);
         t.checkExpect(worldMountain.player.link.y, origy - 1);
         worldMountain.onKeyEvent("down");
-        worldMountain.onTick();
         t.checkExpect(worldMountain.player.link.x, origx);
         t.checkExpect(worldMountain.player.link.y, origy);
         worldMountain.onKeyEvent("left");
-        worldMountain.onTick();
         t.checkExpect(worldMountain.player.link.x, origx - 1);
         t.checkExpect(worldMountain.player.link.y, origy);
         worldMountain.onKeyEvent("right");
-        worldMountain.onTick();
         t.checkExpect(worldMountain.player.link.x, origx);
         t.checkExpect(worldMountain.player.link.y, origy);
-        
 
-        int origx2 = worldRandom.player.link.x;
-        int origy2 = worldRandom.player.link.y;
-        worldRandom.onKeyEvent("up");
-        worldRandom.onTick();
-        t.checkExpect(worldRandom.player.link.x, origx2);
-        t.checkExpect(worldRandom.player.link.y, origy2 - 1);
-        worldRandom.onKeyEvent("down");
-        worldRandom.onTick();
-        t.checkExpect(worldRandom.player.link.x, origx2);
-        t.checkExpect(worldRandom.player.link.y, origy2);
-        worldRandom.onKeyEvent("left");
-        worldRandom.onTick();
-        t.checkExpect(worldRandom.player.link.x, origx2 - 1);
-        t.checkExpect(worldRandom.player.link.y, origy2);
-        worldRandom.onKeyEvent("right");
-        worldRandom.onTick();
-        t.checkExpect(worldRandom.player.link.x, origx2);
-        t.checkExpect(worldRandom.player.link.y, origy2);
-        
-        int origx3 = worldTerrain.player.link.x;
-        int origy3 = worldTerrain.player.link.y;
-        worldTerrain.onKeyEvent("up");
-        worldTerrain.onTick();
-        t.checkExpect(worldTerrain.player.link.x, origx3);
-        t.checkExpect(worldTerrain.player.link.y, origy3 - 1);
-        worldTerrain.onKeyEvent("down");
-        worldTerrain.onTick();
-        t.checkExpect(worldTerrain.player.link.x, origx3);
-        t.checkExpect(worldTerrain.player.link.y, origy3);
-        worldTerrain.onKeyEvent("left");
-        worldTerrain.onTick();
-        t.checkExpect(worldTerrain.player.link.x, origx3 - 1);
-        t.checkExpect(worldTerrain.player.link.y, origy3);
-        worldTerrain.onKeyEvent("right");
-        worldTerrain.onTick();
-        t.checkExpect(worldTerrain.player.link.x, origx3);
-        t.checkExpect(worldTerrain.player.link.y, origy3);
+        int origx2 = worldMountain.player.link.x;
+        int origy2 = worldMountain.player.link.y;
+        worldMountain.onKeyEvent("up");
+        t.checkExpect(worldMountain.player.link.x, origx2);
+        t.checkExpect(worldMountain.player.link.y, origy2 - 1);
+        worldMountain.onKeyEvent("down");
+        t.checkExpect(worldMountain.player.link.x, origx2);
+        t.checkExpect(worldMountain.player.link.y, origy2);
+        worldMountain.onKeyEvent("left");
+        t.checkExpect(worldMountain.player.link.x, origx2 - 1);
+        t.checkExpect(worldMountain.player.link.y, origy2);
+        worldMountain.onKeyEvent("right");
+        t.checkExpect(worldMountain.player.link.x, origx2);
+        t.checkExpect(worldMountain.player.link.y, origy2);
+
+        int origx3 = worldMountain.player.link.x;
+        int origy3 = worldMountain.player.link.y;
+        worldMountain.onKeyEvent("up");
+        t.checkExpect(worldMountain.player.link.x, origx3);
+        t.checkExpect(worldMountain.player.link.y, origy3 - 1);
+        worldMountain.onKeyEvent("down");
+        t.checkExpect(worldMountain.player.link.x, origx3);
+        t.checkExpect(worldMountain.player.link.y, origy3);
+        worldMountain.onKeyEvent("left");
+        t.checkExpect(worldMountain.player.link.x, origx3 - 1);
+        t.checkExpect(worldMountain.player.link.y, origy3);
+        worldMountain.onKeyEvent("right");
+        t.checkExpect(worldMountain.player.link.x, origx3);
+        t.checkExpect(worldMountain.player.link.y, origy3);
     }
 
     // test manhattan distance
@@ -1116,7 +1130,7 @@ class ExamplesIslandGame {
         t.checkExpect(mountainGen.manhattanDistance(50, 60, 30, 30), 50.0);
     }
 
-   //  test height generation
+    // test height generation
     void testGenerateHeight(Tester t) {
         this.initializeIslands();
         t.checkExpect(mountainGen.generateHeights().get(61).get(43), 88.0);
@@ -1158,29 +1172,29 @@ class ExamplesIslandGame {
         t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
                 .get(2).get(57).height > 0, false);
         t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-                .get(24).get(54).height > 0, true);
+                .get(24).get(53).height > 0, true);
         t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
                 .get(26).get(43).height > 0, true);
         t.checkExpect(randomGen.generateCells(this.randomGen.generateHeights())
-                .get(41).get(23).height > 0, true);
+                .get(41).get(21).height > 0, true);
     }
 
     // test flooding
     void testFlood(Tester t) {
         this.initializeIslands();
         // test flooding on mountain terrain
-        
-        //                                    y  *  x
+
+        // y * x
         worldMountain.flood(9);
         t.checkExpect(worldMountain.board.get(12 * 29).isFlooded, true);
         t.checkExpect(worldMountain.board.get(37 * 12).isFlooded, true);
         t.checkExpect(worldMountain.board.get(23 * 39).isFlooded, true);
-        
+
         worldMountain.flood(11);
         t.checkExpect(worldMountain.board.get(58 * 51).isFlooded, false);
         t.checkExpect(worldMountain.board.get(24 * 6).isFlooded, true);
         t.checkExpect(worldMountain.board.get(53 * 2).isFlooded, true);
-        
+
         worldMountain.flood(16);
         t.checkExpect(worldMountain.board.get(49 * 38).isFlooded, false);
         t.checkExpect(worldMountain.board.get(27 * 31).isFlooded, true);
@@ -1193,7 +1207,7 @@ class ExamplesIslandGame {
         t.checkExpect(worldMountain.board.get(3 * 34).isFlooded, true);
         t.checkExpect(worldMountain.board.get(42 * 57).isFlooded, false);
         t.checkExpect(worldMountain.board.get(36 * 29).isFlooded, true);
-        
+
         worldMountain.flood(0);
     }
 
@@ -1221,46 +1235,70 @@ class ExamplesIslandGame {
         t.checkExpect(oCell.draw(100, 128),
                 new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE));
     }
-    
+
     // test drawing pieces, helicopter, and player
     void testDrawingEntities(Tester t) {
         this.initializeIslands();
-        t.checkExpect(this.worldTerrain.player.draw(), new RectangleImage(8, 8, OutlineMode.SOLID, Color.BLACK));
-        t.checkExpect(this.worldTerrain.helicopter.draw(), new CircleImage(4, OutlineMode.SOLID, Color.ORANGE));
-        t.checkExpect(this.worldTerrain.items.get(0).draw(), new CircleImage(4, OutlineMode.SOLID, Color.MAGENTA));
+        t.checkExpect(this.worldTerrain.player.draw(),
+                new RectangleImage(8, 8, OutlineMode.SOLID, Color.BLACK));
+        t.checkExpect(this.worldTerrain.helicopter.draw(),
+                new CircleImage(4, OutlineMode.SOLID, Color.ORANGE));
+        t.checkExpect(this.worldTerrain.items.get(0).draw(),
+                new CircleImage(4, OutlineMode.SOLID, Color.MAGENTA));
     }
-    
+
     // test drawing entities onto the world
     void testDrawingInto(Tester t) {
         this.initializeIslands();
-        WorldImage emptyP = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
-        WorldImage onEmptyP = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, emptyP, this.worldTerrain.player.link.x * Cell.CELLSIZE, this.worldTerrain.player.link.y * Cell.CELLSIZE, this.worldTerrain.player.draw());
+        WorldImage emptyP = new PhantomImage(new EmptyImage(),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1));
+        WorldImage onEmptyP = new OverlayOffsetAlign(AlignModeX.LEFT,
+                AlignModeY.TOP, emptyP,
+                this.worldTerrain.player.link.x * Cell.CELLSIZE,
+                this.worldTerrain.player.link.y * Cell.CELLSIZE,
+                this.worldTerrain.player.draw());
         WorldImage resultP = new OverlayImage(onEmptyP, new EmptyImage());
         WorldImage player = this.worldTerrain.player.drawInto(new EmptyImage());
-        
-        WorldImage emptyT = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
-        WorldImage onEmptyT = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, emptyT, this.worldTerrain.items.get(0).link.x * Cell.CELLSIZE, this.worldTerrain.items.get(0).link.y * Cell.CELLSIZE, this.worldTerrain.items.get(0).draw());
+
+        WorldImage emptyT = new PhantomImage(new EmptyImage(),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1));
+        WorldImage onEmptyT = new OverlayOffsetAlign(AlignModeX.LEFT,
+                AlignModeY.TOP, emptyT,
+                this.worldTerrain.items.get(0).link.x * Cell.CELLSIZE,
+                this.worldTerrain.items.get(0).link.y * Cell.CELLSIZE,
+                this.worldTerrain.items.get(0).draw());
         WorldImage resultT = new OverlayImage(onEmptyT, new EmptyImage());
-        WorldImage target = this.worldTerrain.items.get(0).drawInto(new EmptyImage());
-        
-        WorldImage emptyH = new PhantomImage(new EmptyImage(), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1), Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE+1));
-        WorldImage onEmptyH = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, emptyH, this.worldTerrain.helicopter.link.x * Cell.CELLSIZE, this.worldTerrain.helicopter.link.y * Cell.CELLSIZE, this.worldTerrain.helicopter.draw());
+        WorldImage target = this.worldTerrain.items.get(0)
+                .drawInto(new EmptyImage());
+
+        WorldImage emptyH = new PhantomImage(new EmptyImage(),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1));
+        WorldImage onEmptyH = new OverlayOffsetAlign(AlignModeX.LEFT,
+                AlignModeY.TOP, emptyH,
+                this.worldTerrain.helicopter.link.x * Cell.CELLSIZE,
+                this.worldTerrain.helicopter.link.y * Cell.CELLSIZE,
+                this.worldTerrain.helicopter.draw());
         WorldImage resultH = new OverlayImage(onEmptyH, new EmptyImage());
-        WorldImage helicopter = this.worldTerrain.player.drawInto(new EmptyImage());
-        
+        WorldImage helicopter = this.worldTerrain.player
+                .drawInto(new EmptyImage());
+
         // these tests fail even though the output looks the same in the error
         // t.checkExpect(player, resultP);
         // t.checkExpect(target, resultT);
         // t.checkExpect(helicopter, resultH);
     }
-    
+
 }
 
 class ExamplesPlay {
     ForbiddenIslandWorld world = new ForbiddenIslandWorld();
-    
+
     // play the game
     void testGame(Tester t) {
-        this.world.bigBang(Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), Cell.CELLSIZE*(AIslandGenerator.ISLAND_SIZE + 1), .016);
+        this.world.bigBang(Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1),
+                Cell.CELLSIZE * (AIslandGenerator.ISLAND_SIZE + 1), .016);
     }
 }
