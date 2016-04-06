@@ -987,29 +987,35 @@ class ExamplesIslandGame {
         worldMountain.player.link = worldMountain.helicopter.link;
         worldMountain.onTick();
         t.checkExpect(worldMountain.state.check("win"), true);
+        t.checkExpect(worldMountain.isWin(), true);
         
         worldTerrain.items = new Empty<Target>();
         worldTerrain.player.link = worldTerrain.helicopter.link;
         worldTerrain.onTick();
         t.checkExpect(worldTerrain.state.check("win"), true);
+        t.checkExpect(worldTerrain.isWin(), true);
         
         worldRandom.items = new Empty<Target>();
         worldRandom.player.link = worldRandom.helicopter.link;
         worldRandom.onTick();
         t.checkExpect(worldRandom.state.check("win"), true);
+        t.checkExpect(worldRandom.isWin(), true);
         
         this.initializeIslands();
         worldRandom.items.asCons().item.link.isFlooded = true;
         worldRandom.onTick();
         t.checkExpect(worldRandom.state.check("lose"), true);
+        t.checkExpect(worldRandom.isOver(), true);
         
         worldTerrain.items.asCons().item.link.isFlooded = true;
         worldTerrain.onTick();
         t.checkExpect(worldTerrain.state.check("lose"), true);
+        t.checkExpect(worldTerrain.isOver(), true);
         
         worldMountain.items.asCons().item.link.isFlooded = true;
         worldMountain.onTick();
         t.checkExpect(worldMountain.state.check("lose"), true);
+        t.checkExpect(worldMountain.isOver(), true);
     }
 
     // test manhattan distance
