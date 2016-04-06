@@ -38,6 +38,9 @@ interface IList<T> extends Iterable<T> {
 
     // get the element at the given index
     T get(int idx);
+    
+    // get size
+    int size();
 }
 
 // Abstract class containing an iterator common to both classes
@@ -74,6 +77,11 @@ class Cons<T> extends AList<T> {
         }
         return this.next.get(idx - 1);
     }
+
+    // returns size
+    public int size() {
+        return 1 + this.next.size();
+    }
 }
 
 // an empty list
@@ -91,6 +99,11 @@ class Empty<T> extends AList<T> {
     // get an item in an empty list
     public T get(int idx) {
         throw new RuntimeException("Index out of bounds");
+    }
+
+    // returns size of list
+    public int size() {
+        return 0;
     }
 }
 
