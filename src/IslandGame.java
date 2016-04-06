@@ -36,7 +36,7 @@ class Utility {
 // Represents a single square of the game area
 class Cell {
     // represents the size of a cell for drawing
-    static final int CELLSIZE = 10;
+    static final int CELLSIZE = 15;
 
     // represents absolute height of this cell, in feet
     double height;
@@ -530,7 +530,7 @@ class PieceTarget extends Target {
         Color safest = Color.DARK_GRAY;
         Color unsafest = Color.RED;
 
-        return new CircleImage(4, OutlineMode.SOLID, new Utility().mix(safest,
+        return new CircleImage((Cell.CELLSIZE - 2)/2, OutlineMode.SOLID, new Utility().mix(safest,
                 unsafest,
                 Math.max(0, (this.link.height - waterHeight) / maxHeight)));
     }
@@ -543,7 +543,7 @@ class HelicopterTarget extends Target {
 
     // draw the helicopter
     WorldImage draw(int waterHeight, int maxHeight) {
-        return new CircleImage(4, OutlineMode.SOLID, Color.MAGENTA);
+        return new CircleImage((Cell.CELLSIZE - 2)/2, OutlineMode.SOLID, Color.MAGENTA);
     }
 }
 
@@ -556,7 +556,7 @@ class Player {
 
     // draw the player
     WorldImage draw() {
-        return new RectangleImage(8, 8, OutlineMode.SOLID, Color.BLACK);
+        return new RectangleImage(Cell.CELLSIZE - 2, Cell.CELLSIZE - 2, OutlineMode.SOLID, Color.BLACK);
     }
 
     // draw the player on top of the given image
@@ -727,8 +727,8 @@ class ForbiddenIslandWorld extends World {
 
     // the default scene
     WorldScene defaultScene() {
-        return new WorldScene((AIslandGenerator.ISLAND_SIZE + 1) * 10,
-                (AIslandGenerator.ISLAND_SIZE + 1) * 10);
+        return new WorldScene((AIslandGenerator.ISLAND_SIZE + 1) * Cell.CELLSIZE,
+                (AIslandGenerator.ISLAND_SIZE + 1) * Cell.CELLSIZE);
     }
 
     // draw the menu scene
@@ -736,7 +736,7 @@ class ForbiddenIslandWorld extends World {
         WorldScene res = this.defaultScene();
         WorldImage text = new TextImage(
                 "m - mountain | r - random | t - terrain", 30, Color.BLACK);
-        res.placeImageXY(text, 300, 300);
+        res.placeImageXY(text, 450, 450);
         return res;
     }
 
@@ -746,9 +746,9 @@ class ForbiddenIslandWorld extends World {
         WorldImage score = new TextImage(this.score.toString(), 30,
                 Color.MAGENTA);
         scene.placeImageXY(this.drawInGame(),
-                (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5,
-                (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * 10) + 5);
-        scene.placeImageXY(score, 500, 30);
+                (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * Cell.CELLSIZE) + 5,
+                (int) ((AIslandGenerator.ISLAND_SIZE / 2.0) * Cell.CELLSIZE) + 5);
+        scene.placeImageXY(score, 825, 30);
         return scene;
     }
 
@@ -760,9 +760,9 @@ class ForbiddenIslandWorld extends World {
                 30, Color.BLACK);
         WorldImage menu = new TextImage(
                 "m - mountain | r - random | t - terrain", 30, Color.BLACK);
-        scene.placeImageXY(lose, 300, 200);
-        scene.placeImageXY(score, 300, 300);
-        scene.placeImageXY(menu, 300, 400);
+        scene.placeImageXY(lose, 450, 375);
+        scene.placeImageXY(score, 450, 450);
+        scene.placeImageXY(menu, 450, 525);
         return scene;
     }
 
@@ -774,9 +774,9 @@ class ForbiddenIslandWorld extends World {
                 30, Color.BLACK);
         WorldImage menu = new TextImage(
                 "m - mountain | r - random | t - terrain", 30, Color.BLACK);
-        scene.placeImageXY(lose, 300, 200);
-        scene.placeImageXY(score, 300, 300);
-        scene.placeImageXY(menu, 300, 400);
+        scene.placeImageXY(lose, 450, 375);
+        scene.placeImageXY(score, 450, 450);
+        scene.placeImageXY(menu, 450, 525);
         return scene;
     }
 
@@ -882,6 +882,19 @@ class ForbiddenIslandWorld extends World {
 
         return this.board.get(rand);
     }
+    
+    // get a random non-flooded cell from the list of cells which is also at maxHeight
+    Cell getRandomDryMaxHeight() {
+        int rand = (int) (Math.random() * (AIslandGenerator.ISLAND_SIZE + 1)
+                * (AIslandGenerator.ISLAND_SIZE + 1));
+
+        while (this.board.get(rand).height != this.maxHeight) {
+            rand = (int) (Math.random() * (AIslandGenerator.ISLAND_SIZE + 1)
+                    * (AIslandGenerator.ISLAND_SIZE + 1));
+        }
+        
+        return this.board.get(rand);
+    }
 
     // place items in the world
     // EFFECT: initializes the targets
@@ -904,7 +917,7 @@ class ForbiddenIslandWorld extends World {
     // place helicopter
     // EFFECT: initializes helicopter
     void createHelicopter() {
-        this.helicopter = new HelicopterTarget(this.getRandomDry());
+        this.helicopter = new HelicopterTarget(this.getRandomDryMaxHeight());
     }
 
     // flood the world
@@ -1259,25 +1272,25 @@ class ExamplesIslandGame {
         Cell cell = new Cell(10, 10, 10);
         cell.isFlooded = true;
         t.checkExpect(cell.draw(20, 64),
-                new RectangleImage(10, 10, OutlineMode.SOLID,
+                new RectangleImage(Cell.CELLSIZE, Cell.CELLSIZE, OutlineMode.SOLID,
                         new Utility().mix(
                                 new Color(0.0f, 0.0f, 1.0f), new Color(0.0f,
                                         0.35f, 0.5f),
                         Math.min(Math.sqrt((20 - cell.height) / 64), 1.0f))));
         cell.isFlooded = false;
         t.checkExpect(cell.draw(25, 128),
-                new RectangleImage(10, 10, OutlineMode.SOLID,
+                new RectangleImage(Cell.CELLSIZE, Cell.CELLSIZE, OutlineMode.SOLID,
                         new Utility().mix(Color.red, new Color(0.25f, 0.5f,
                                 0.0f),
                         Math.min(Math.sqrt((25 - cell.height) / 128), 1.0f))));
         t.checkExpect(cell.draw(8, 128),
-                new RectangleImage(10, 10, OutlineMode.SOLID,
+                new RectangleImage(Cell.CELLSIZE, Cell.CELLSIZE, OutlineMode.SOLID,
                         new Utility().mix(Color.white,
                                 new Color(0.0f, 0.5f, 0.0f),
                                 (cell.height - 8) / 128)));
         OceanCell oCell = new OceanCell(10, 10);
         t.checkExpect(oCell.draw(100, 128),
-                new RectangleImage(10, 10, OutlineMode.SOLID, Color.BLUE));
+                new RectangleImage(Cell.CELLSIZE, Cell.CELLSIZE, OutlineMode.SOLID, Color.BLUE));
     }
 }
 
