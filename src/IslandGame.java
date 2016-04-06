@@ -1017,6 +1017,68 @@ class ExamplesIslandGame {
         t.checkExpect(worldMountain.state.check("lose"), true);
         t.checkExpect(worldMountain.isOver(), true);
     }
+    
+    // test movement
+    void testMovement(Tester t) {
+        this.initializeIslands();
+        int origx = worldMountain.player.link.x;
+        int origy = worldMountain.player.link.y;
+        worldMountain.onKeyEvent("up");
+        worldMountain.onTick();
+        t.checkExpect(worldMountain.player.link.x, origx);
+        t.checkExpect(worldMountain.player.link.y, origy - 1);
+        worldMountain.onKeyEvent("down");
+        worldMountain.onTick();
+        t.checkExpect(worldMountain.player.link.x, origx);
+        t.checkExpect(worldMountain.player.link.y, origy);
+        worldMountain.onKeyEvent("left");
+        worldMountain.onTick();
+        t.checkExpect(worldMountain.player.link.x, origx - 1);
+        t.checkExpect(worldMountain.player.link.y, origy);
+        worldMountain.onKeyEvent("right");
+        worldMountain.onTick();
+        t.checkExpect(worldMountain.player.link.x, origx);
+        t.checkExpect(worldMountain.player.link.y, origy);
+        
+
+        int origx2 = worldRandom.player.link.x;
+        int origy2 = worldRandom.player.link.y;
+        worldRandom.onKeyEvent("up");
+        worldRandom.onTick();
+        t.checkExpect(worldRandom.player.link.x, origx2);
+        t.checkExpect(worldRandom.player.link.y, origy2 - 1);
+        worldRandom.onKeyEvent("down");
+        worldRandom.onTick();
+        t.checkExpect(worldRandom.player.link.x, origx2);
+        t.checkExpect(worldRandom.player.link.y, origy2);
+        worldRandom.onKeyEvent("left");
+        worldRandom.onTick();
+        t.checkExpect(worldRandom.player.link.x, origx2 - 1);
+        t.checkExpect(worldRandom.player.link.y, origy2);
+        worldRandom.onKeyEvent("right");
+        worldRandom.onTick();
+        t.checkExpect(worldRandom.player.link.x, origx2);
+        t.checkExpect(worldRandom.player.link.y, origy2);
+        
+        int origx3 = worldTerrain.player.link.x;
+        int origy3 = worldTerrain.player.link.y;
+        worldTerrain.onKeyEvent("up");
+        worldTerrain.onTick();
+        t.checkExpect(worldTerrain.player.link.x, origx3);
+        t.checkExpect(worldTerrain.player.link.y, origy3 - 1);
+        worldTerrain.onKeyEvent("down");
+        worldTerrain.onTick();
+        t.checkExpect(worldTerrain.player.link.x, origx3);
+        t.checkExpect(worldTerrain.player.link.y, origy3);
+        worldTerrain.onKeyEvent("left");
+        worldTerrain.onTick();
+        t.checkExpect(worldTerrain.player.link.x, origx3 - 1);
+        t.checkExpect(worldTerrain.player.link.y, origy3);
+        worldTerrain.onKeyEvent("right");
+        worldTerrain.onTick();
+        t.checkExpect(worldTerrain.player.link.x, origx3);
+        t.checkExpect(worldTerrain.player.link.y, origy3);
+    }
 
     // test manhattan distance
     void testManhattanDistance(Tester t) {
