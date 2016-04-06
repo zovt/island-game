@@ -154,4 +154,11 @@ class ExamplesLists {
         t.checkException(new RuntimeException("Index out of bounds"), l3, "get",
                 4);
     }
+    
+    // test size
+    void testSize(Tester t) {
+        t.checkExpect(l1.size(), 0);
+        t.checkExpect(l2.size(), 1);
+        t.checkExpect(l3.size(), 2);
+    }
 }
